@@ -41,7 +41,8 @@
       "exclude": [
         "apps/api-gateway-e2e/**/*",
         "apps/auth-service-e2e/**/*",
-        "apps/products-service-e2e/**/*"
+        "apps/products-service-e2e/**/*",
+        "apps/orders-service-e2e/**/*"
       ]
     }
   ]
