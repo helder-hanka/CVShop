@@ -5,6 +5,10 @@ import { AppService } from './app.service';
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
+  @Get('health')
+  health() {
+    return { status: 'ok', service: process.env.SERVICE_NAME ?? 'unknown' };
+  }
   @Get()
   getData() {
     return this.appService.getData();
