@@ -43,7 +43,8 @@
         "apps/auth-service-e2e/**/*",
         "apps/products-service-e2e/**/*",
         "apps/orders-service-e2e/**/*",
-        "apps/payments-service-e2e/**/*"
+        "apps/payments-service-e2e/**/*",
+        "apps/notifications-service-e2e/**/*"
       ]
     }
   ]
