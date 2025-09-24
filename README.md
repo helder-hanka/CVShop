@@ -57,6 +57,17 @@ pnpm build:all
 
 pnpm compose:up
 
+# Démarre seulement Postgres + RabbitMQ :
+
+docker compose -f docker/docker-compose.yml up -d postgres rabbitmq
+
+# Lance les apps en watch (dans des terminaux séparés ou avec concurrently) :
+
+pnpm nx serve api-gateway
+pnpm nx serve auth-service
+
+# ... idem pour les autres services quand tu en as besoin
+
 You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
 
 [Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
