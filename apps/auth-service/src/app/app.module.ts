@@ -5,6 +5,8 @@ import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { envValidationSchema } from '@cvshop/shared-utils';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { User } from './auth/entities/user.entity';
+import { RefreshToken } from './auth/entities/refresh-token.entity';
 
 @Module({
   imports: [
@@ -19,7 +21,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       username: process.env.DB_USER,
       password: process.env.DB_PASS,
       database: process.env.DB_NAME,
-      autoLoadEntities: true,
+      entities: [User, RefreshToken],
+      // autoLoadEntities: true,
       synchronize: true, // dev only
     }),
     AuthModule,
