@@ -7,7 +7,7 @@ export const envValidationSchema = Joi.object({
   PORT: Joi.number().integer().min(1).max(65535).default(3001),
 
   // DB
-  DATABASE_URL: Joi.string().uri().required(),
+  // DATABASE_URL: Joi.string().uri().required(),
 
   DB_HOST: Joi.string().default('localhost'),
   DB_PORT: Joi.number().default(5432),
