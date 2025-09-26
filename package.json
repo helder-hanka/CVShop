@@ -10,8 +10,8 @@
     "dev:payments": "nx serve payments-service",
     "dev:notifications": "nx serve notifications-service",
     "build:all": "nx run-many -t build -p api-gateway auth-service products-service orders-service payments-service notifications-service",
-    "compose:up": "docker compose -f docker/docker-compose.yml up --build",
-    "compose:down": "docker compose -f docker/docker-compose.yml down -v"
+    "compose:up": "docker compose --env-file docker/env/.env -f docker/docker-compose.yml up --build",
+    "compose:down": "docker compose --env-file docker/env/.env -f docker/docker-compose.yml down -v"
   },
   "private": true,
   "devDependencies": {
