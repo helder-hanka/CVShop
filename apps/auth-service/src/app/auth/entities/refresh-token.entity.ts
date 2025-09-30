@@ -4,6 +4,7 @@ import {
   ManyToOne,
   Index,
   Column,
+  CreateDateColumn,
 } from 'typeorm';
 import { User } from './user.entity';
 
@@ -25,6 +26,6 @@ export class RefreshToken {
   @Column({ type: 'timestamptz' })
   expiresAt!: Date;
 
-  @Column()
+  @CreateDateColumn()
   createdAt!: Date;
 }

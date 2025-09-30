@@ -3,7 +3,13 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
+  UpdateDateColumn,
 } from 'typeorm';
+
+type UserStatus = 'ACTIVE' | 'SUSPENDED';
+type SalesStatus = 'OPEN' | 'FROZEN';
+const userEnum = ['ACTIVE', 'SUSPENDED'];
+const salesEnum = ['OPEN', 'FROZEN'];
 
 @Entity('users')
 export class User {
@@ -18,47 +24,46 @@ export class User {
 
   @Column({ nullable: true, type: 'text' })
   avatarUrl?: string;
-  @Column({ type: 'text' })
+  @Column({ type: 'text', nullable: true })
   phoneNumber!: string;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'text', nullable: true })
   firstName!: string;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'text', nullable: true })
   lastName!: string;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'text', nullable: true })
   address!: string;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'text', nullable: true })
   codePostal!: string;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'text', nullable: true })
   city!: string;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'text', nullable: true })
   country!: string;
 
   @Column({ type: 'date', nullable: true })
-  dateOfBirth?: string;
+  dateOfBirth?: Date;
 
   @Column({ nullable: true })
   @Column('text', { array: true, default: ['CUSTOMER'] })
   roles!: string[];
 
-  @Column({ default: 'ACTIVE' })
-  status!: 'ACTIVE' | 'SUSPENDED';
+  @Column({ type: 'enum', enum: userEnum, default: 'ACTIVE' })
+  status!: UserStatus;
 
-  @Column({ nullable: true })
-  salesStatus?: 'OPEN' | 'FROZEN';
+  @Column({ type: 'enum', enum: salesEnum, default: 'OPEN' })
+  salesStatus?: SalesStatus;
 
-  @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @Column({ default: false })
+  emailVerified?: boolean;
+
+  @CreateDateColumn()
   createdAt!: Date;
 
-  @CreateDateColumn({
-    type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP',
-    onUpdate: 'CURRENT_TIMESTAMP',
-  })
+  @UpdateDateColumn()
   updatedAt!: Date;
 }
