@@ -35,4 +35,10 @@ export class AuthController {
       throw new BadRequestException('Refresh token is required');
     return this.authService.refreshTokens(refreshToken);
   }
+  @Post('logout')
+  logout(@Body('refreshToken') refreshToken: string) {
+    if (!refreshToken)
+      throw new BadRequestException('Refresh token is required');
+    return this.authService.logout(refreshToken);
+  }
 }
