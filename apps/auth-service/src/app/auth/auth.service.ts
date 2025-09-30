@@ -3,7 +3,7 @@ import { CreateAuthDto } from './dto/create-auth.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
-import { Role, UserSellerRegisteredEvent } from '@cvshop/shared-dto';
+import { LoginDto, Role, UserSellerRegisteredEvent } from '@cvshop/shared-dto';
 import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 import { RefreshToken } from './entities/refresh-token.entity';
@@ -70,6 +70,45 @@ export class AuthService {
 
     return this.issueTokens(user.id, user.email, user.roles);
   }
+
+  async login(dto: LoginDto): Promise<TokenResponseDto> {
+    const user = await this.users.findOne({ where: { email: dto.email } });
+    if (!user) throw new BadRequestException('Email already exists');
+    const pwMatches = await bcrypt.compare(dto.password, user.password);
+    if (!pwMatches) throw new BadRequestException('Invalid credentials');
+    if (!user.emailVerified)
+      throw new BadRequestException('Email not verified');
+    return this.issueTokens(user.id, user.email, user.roles);
+  }
+
+  async refreshTokens(token: string): Promise<TokenResponseDto> {
+    try {
+      const payload = await this.jwt.verifyAsync<{
+        sub: string;
+        email: string;
+        roles: string[];
+        jti: string;
+      }>(token, {
+        secret: this.refreshSecret(),
+      });
+      const stored = await this.tokens.findOne({
+        where: { id: payload.jti, userId: payload.sub },
+      });
+      if (!stored || stored.isRevoked || stored.expiresAt < new Date()) {
+        throw new BadRequestException('Invalid token (db)');
+      }
+      // rotate refresh token
+      stored.isRevoked = true;
+      await this.tokens.save(stored);
+      // on peut aussi supprimer les anciens tokens expirés ici
+      // await this.tokens.delete({ expiresAt: In([null, new Date()]) });
+      // await this.tokens.delete({ id: payload.jti });
+      return this.issueTokens(payload.sub, payload.email, payload.roles);
+    } catch {
+      throw new BadRequestException('Invalid token');
+    }
+  }
+
   private async existingEmail(email: string) {
     const exists = await this.users.findOne({ where: { email: email } });
     if (exists) throw new BadRequestException('Email already exists');
