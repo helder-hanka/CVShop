@@ -101,8 +101,9 @@ export class AuthService {
       stored.isRevoked = true;
       await this.tokens.save(stored);
       // on peut aussi supprimer les anciens tokens expirés ici
-      // await this.tokens.delete({ expiresAt: In([null, new Date()]) });
-      // await this.tokens.delete({ id: payload.jti });
+      await this.tokens.delete({ id: payload.jti });
+      await this.pruneExpiredTokens();
+      // issue new tokens
       return this.issueTokens(payload.sub, payload.email, payload.roles);
     } catch {
       throw new BadRequestException('Invalid token');
@@ -122,6 +123,7 @@ export class AuthService {
         expiresIn: this.emailVerifyExpire(),
       }
     );
+    console.log('verifyToken', verifyToken);
     const verifyUrl = `${this.publicUrl()}/api/auth/verify-email?token=${encodeURIComponent(
       verifyToken
     )}`;
@@ -188,6 +190,24 @@ export class AuthService {
       return { success: true, message: 'Email verified successfully' };
     } catch {
       throw new BadRequestException('Invalid token or expired');
+    }
+  }
+  async logout(refreshToken: string) {
+    try {
+      const payload = await this.jwt.verifyAsync<{ jti: string; sub: string }>(
+        refreshToken,
+        {
+          secret: this.refreshSecret(),
+        }
+      );
+      // await this.tokens.delete({ id: payload.sub });
+      await this.tokens.update(
+        { id: payload.jti, userId: payload.sub },
+        { isRevoked: true }
+      );
+      return { success: true, message: 'Logged out successfully' };
+    } catch {
+      return { success: false, message: 'Invalid token' };
     }
   }
   // petite maintenance (optionnel): révoquer tous les refresh expirés
