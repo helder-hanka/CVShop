@@ -61,9 +61,13 @@ services:
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
       JWT_ACCESS_TTL: ${JWT_ACCESS_TTL}
       JWT_REFRESH_TTL: ${JWT_REFRESH_TTL}
-      APP_URL: ${APP_URL}
-      FRONT_URL: ${FRONT_URL}
-      EMAIL_CONFIRM_TTL_MIN: ${EMAIL_CONFIRM_TTL_MIN}
+      AUTH_PUBLIC_URL: ${AUTH_PUBLIC_URL}
+      EMAIL_VERIFY_SECRET: ${EMAIL_VERIFY_SECRET}
+      EMAIL_VERIFY_TTL: ${EMAIL_VERIFY_TTL}
+      RABBITMQ_URL: ${RABBITMQ_URL}
+      # APP_URL: ${APP_URL}
+      # FRONT_URL: ${FRONT_URL}
+      # EMAIL_CONFIRM_TTL_MIN: ${EMAIL_CONFIRM_TTL_MIN}
     ports: ["${AUTH_PORT}:3001"]
     depends_on: [postgres]
 
@@ -105,11 +109,25 @@ services:
     build:
       context: ..
       dockerfile: ./apps/notifications-service/Dockerfile
+    env_file: ["./env/.env"]
     environment:
-      PORT: 3005
+      PORT: ${NOTIFICATIONS_PORT}
       SERVICE_NAME: notifications-service
-    ports: ["3005:3005"]
-    depends_on: [rabbitmq]
+      RABBITMQ_URL: ${RABBITMQ_URL}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
+      EMAIL_FROM: ${EMAIL_FROM}
+      INCLUDE_PASSWORD_IN_EMAIL: ${INCLUDE_PASSWORD_IN_EMAIL}
+    ports: ["${NOTIFICATIONS_PORT}:3005"]
+    depends_on: [rabbitmq, mailhog]
+
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - "1025:1025" # SMTP
+      - "8025:8025" # Web UI http://localhost:8025
 
 volumes:
   pgdata:
