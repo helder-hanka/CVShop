@@ -141,8 +141,6 @@ export class AuthService {
       'user.seller.registered',
       event
     );
-    // --- issue tokens as before ---
-    return this.issueTokens(user.id, user.email, user.roles);
   }
 
   private async issueTokens(
