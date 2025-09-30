@@ -28,10 +28,21 @@ export const envValidationSchema = Joi.object({
   SMTP_USER: Joi.string().required(),
   SMTP_PASSWORD: Joi.string().required(),
 
-  // App URLs
-  APP_URL: Joi.string().uri().required(), // ex: https://api.cvshop.com
-  FRONT_URL: Joi.string().uri().optional(), // ex: https://www.cvshop.com
+  // MailHog for dev
+  EMAIL_VERIFY_SECRET: Joi.string().required(),
+  EMAIL_VERIFY_TTL: Joi.string().default('24h'),
+
+  // App URL
+  AUTH_PUBLIC_URL: Joi.string().uri().required(),
+  // APP_URL: Joi.string().uri().required(), // ex: https://api.cvshop.com
+  // FRONT_URL: Joi.string().uri().optional(), // ex: https://www.cvshop.com
 
   // Email confirmation
-  EMAIL_CONFIRM_TTL_MIN: Joi.number().default(60), // link valid X minutes
+  //EMAIL_CONFIRM_TTL_MIN: Joi.number().default(60), // link valid X minutes
+
+  // RabbitMQ
+  RABBITMQ_HOST: Joi.string().default('rabbitmq'),
+  RABBITMQ_PORT: Joi.number().default(5672),
+  RABBITMQ_USER: Joi.string().default('guest'),
+  RABBITMQ_PASS: Joi.string().default('guest'),
 });
