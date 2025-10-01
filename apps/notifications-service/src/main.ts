@@ -28,9 +28,7 @@ async function bootstrap() {
   });
   // await app.listen(port);
   await app.startAllMicroservices();
-  Logger.log(
-    `🚀 Application is running on: http://localhost:${port}/${globalPrefix}`
-  );
+  Logger.log(`✅ Notifications microservice connected to RMQ.`);
 }
 
 bootstrap();
