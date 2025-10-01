@@ -101,7 +101,7 @@ export class AuthService {
       stored.isRevoked = true;
       await this.tokens.save(stored);
       // on peut aussi supprimer les anciens tokens expirés ici
-      await this.tokens.delete({ id: payload.jti });
+      // await this.tokens.delete({ id: payload.jti });
       await this.pruneExpiredTokens();
       // issue new tokens
       return this.issueTokens(payload.sub, payload.email, payload.roles);
