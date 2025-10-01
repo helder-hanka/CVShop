@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { In, LessThan, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { LoginDto, Role, UserSellerRegisteredEvent } from '@cvshop/shared-dto';
 import * as bcrypt from 'bcryptjs';
@@ -18,7 +18,7 @@ export class AuthService {
     @InjectRepository(User) private users: Repository<User>,
     @InjectRepository(RefreshToken) private tokens: Repository<RefreshToken>,
     private jwt: JwtService,
-    @Inject('NOTIFICATION') private readonly notifications: ClientProxy
+    @Inject('NOTIFICATIONS') private readonly notifications: ClientProxy
   ) {}
 
   private emailVerifySecret() {
@@ -73,7 +73,7 @@ export class AuthService {
 
   async login(dto: LoginDto): Promise<TokenResponseDto> {
     const user = await this.users.findOne({ where: { email: dto.email } });
-    if (!user) throw new BadRequestException('Email already exists');
+    if (!user) throw new BadRequestException('Invalid credentials');
     const pwMatches = await bcrypt.compare(dto.password, user.password);
     if (!pwMatches) throw new BadRequestException('Invalid credentials');
     if (!user.emailVerified)
@@ -210,8 +210,6 @@ export class AuthService {
   }
   // petite maintenance (optionnel): révoquer tous les refresh expirés
   async pruneExpiredTokens() {
-    await this.tokens.delete({
-      expiresAt: In([null, new Date()]),
-    });
+    await this.tokens.delete({ expiresAt: LessThan(new Date()) });
   }
 }
