@@ -13,7 +13,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
     JwtModule.register({}),
     ClientsModule.register([
       {
-        name: 'NOTIFICATION',
+        name: 'NOTIFICATIONS',
         transport: Transport.RMQ,
         options: {
           urls: [
@@ -21,7 +21,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
             // `amqp://${process.env.RABBITMQ_USER}:${process.env.RABBITMQ_PASS}` +
             //   `@${process.env.RABBITMQ_HOST}:${process.env.RABBITMQ_PORT}`,
           ],
-          queue: 'notification',
+          queue: 'notifications',
           queueOptions: {
             durable: true,
           },
