@@ -68,13 +68,10 @@ export class AuthService {
       })
     );
 
-    const newUser =
-      role[0] === Role.CUSTOMER
-        ? user
-        : {
-            ...user,
-            password: rDto.password,
-          };
+    const newUser = {
+      ...user,
+      password: '',
+    };
 
     await this.sendEmailVerification(newUser);
 
