@@ -7,7 +7,7 @@ import { envValidationSchema } from '@cvshop/shared-utils';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './auth/entities/user.entity';
 import { RefreshToken } from './auth/entities/refresh-token.entity';
-import { UsersModule } from './users/users.module';
+import { UsersModule } from './admin/users.module';
 
 @Module({
   imports: [
