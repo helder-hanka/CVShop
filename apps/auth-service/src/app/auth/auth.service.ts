@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, LessThan, Repository } from 'typeorm';
+import { LessThan, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { LoginDto, Role, UserSellerRegisteredEvent } from '@cvshop/shared-dto';
 import * as bcrypt from 'bcryptjs';
