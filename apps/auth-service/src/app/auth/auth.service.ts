@@ -123,7 +123,6 @@ export class AuthService {
         expiresIn: this.emailVerifyExpire(),
       }
     );
-    console.log('verifyToken', verifyToken);
     const verifyUrl = `${this.publicUrl()}/api/auth/verify-email?token=${encodeURIComponent(
       verifyToken
     )}`;
