@@ -1,6 +1,6 @@
 import { Controller } from '@nestjs/common';
 import { MailerService } from './mailer.service';
-import { UserSellerRegisteredEvent } from '@cvshop/shared-dto';
+import { Role, UserSellerRegisteredEvent } from '@cvshop/shared-dto';
 import { EventPattern, Payload } from '@nestjs/microservices';
 
 @Controller()
@@ -22,7 +22,7 @@ export class MailerController {
       event.verifyUrl
     }" style="display: inline-block; padding: 10px 15px; background-color: #007BFF; color: #fff; text-decoration: none; border-radius: 5px;">Verify Email</a>
     ${
-      includPwd && event.plainPassword
+      event.role !== Role.CUSTOMER && includPwd && event.plainPassword
         ? `<p>Your temporary password is: <strong>${event.plainPassword}</strong></p>`
         : ''
     }
