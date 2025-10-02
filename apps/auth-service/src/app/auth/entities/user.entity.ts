@@ -56,10 +56,13 @@ export class User {
   status!: UserStatus;
 
   @Column({ type: 'enum', enum: salesEnum, default: 'OPEN' })
-  salesStatus?: SalesStatus;
+  salesStatus!: SalesStatus;
 
   @Column({ default: false })
-  emailVerified?: boolean;
+  isSuperAdmin!: boolean;
+
+  @Column({ default: false })
+  emailVerified!: boolean;
 
   @CreateDateColumn()
   createdAt!: Date;
