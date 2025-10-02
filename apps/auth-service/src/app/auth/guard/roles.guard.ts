@@ -23,10 +23,10 @@ export class RolesGuard implements CanActivate {
     const req = ctx.switchToHttp().getRequest();
     const user = req.user as {
       role: Role;
-      status: 'ACTIVE' | 'SUSPENDED' | 'DELETED';
+      status: 'ACTIVE' | 'SUSPENDED';
     };
     if (!user) throw new ForbiddenException('Not authenticated');
-    if (user.status !== 'ACTIVE')
+    if (user.status === 'SUSPENDED')
       throw new ForbiddenException(`Account ${user.status}`);
     return requiredRoles.includes(user.role);
   }
