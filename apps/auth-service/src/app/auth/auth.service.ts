@@ -56,20 +56,25 @@ export class AuthService {
   async register(rDto: CreateAuthDto) {
     await this.existingEmail(rDto.email);
 
+    const role = rDto.roles?.length ? rDto.roles : [Role.CUSTOMER];
+
     const passwordHash = await bcrypt.hash(rDto.password, 12);
     const user = await this.users.save(
       this.users.create({
         ...rDto,
         password: passwordHash,
-        roles: rDto.roles?.length ? rDto.roles : [Role.CUSTOMER],
+        roles: role,
         emailVerified: false,
       })
     );
 
-    const newUser = {
-      ...user,
-      password: rDto.password,
-    };
+    const newUser =
+      role[0] === Role.CUSTOMER
+        ? user
+        : {
+            ...user,
+            password: rDto.password,
+          };
 
     await this.sendEmailVerification(newUser);
 
@@ -141,6 +146,7 @@ export class AuthService {
     const event: UserSellerRegisteredEvent = {
       userId: user.id,
       email: user.email,
+      role: user.roles[0],
       verifyUrl,
       ...(this.includePasswordInEmail()
         ? { plainPassword: user.password }
