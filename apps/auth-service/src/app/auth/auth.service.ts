@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { CreateAuthDto } from './dto/create-auth.dto';
+import { CreateAdminDto, CreateAuthDto } from './dto/create-auth.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { LessThan, Repository } from 'typeorm';
+import { ArrayContains, LessThan, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { LoginDto, Role, UserSellerRegisteredEvent } from '@cvshop/shared-dto';
 import * as bcrypt from 'bcryptjs';
@@ -78,6 +78,44 @@ export class AuthService {
 
     await this.sendEmailVerification(newUser);
 
+    return {
+      success: true,
+      message:
+        'Account creation successful: Check your email for account validation ',
+    };
+  }
+
+  async bootstrapPlatformAdmin(adminDto: CreateAdminDto) {
+    await this.existingEmail(adminDto.email);
+    const expected = process.env.ADMIN_BOOTSTRAP_TOKEN ?? '';
+    if (!expected || adminDto.token !== expected)
+      throw new BadRequestException('Invalid credentials');
+
+    // Bootstrap possible uniquement si aucun admin n'existe
+    const countAdmins = await this.users.count({
+      where: { roles: ArrayContains([Role.PLATFORM_ADMIN]) },
+    });
+
+    if (countAdmins > 0)
+      throw new BadRequestException('unable to create admin');
+
+    const passwordHash = await bcrypt.hash(adminDto.password, 12);
+    const user = await this.users.save(
+      this.users.create({
+        email: adminDto.email,
+        password: passwordHash,
+        roles: [Role.PLATFORM_ADMIN],
+        emailVerified: false,
+        isSuperAdmin: true,
+      })
+    );
+
+    const newUser = {
+      ...user,
+      password: '',
+    };
+
+    await this.sendEmailVerification(newUser);
     return {
       success: true,
       message:

@@ -18,3 +18,8 @@ export class CreateAuthDto {
   @IsEnum(Role, { each: true })
   roles?: Role[];
 }
+
+export class CreateAdminDto extends CreateAuthDto {
+  @IsString()
+  token!: string;
+}

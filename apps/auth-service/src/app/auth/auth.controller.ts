@@ -7,7 +7,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { CreateAuthDto } from './dto/create-auth.dto';
+import { CreateAdminDto, CreateAuthDto } from './dto/create-auth.dto';
 import { LoginDto, TokenResponseDto } from '@cvshop/shared-dto';
 @Controller('auth')
 export class AuthController {
@@ -17,7 +17,10 @@ export class AuthController {
   register(@Body() createAuthDto: CreateAuthDto) {
     return this.authService.register(createAuthDto);
   }
-
+  @Post('bootstrap-platform-admin')
+  async bootstrapAdmin(@Body() body: CreateAdminDto) {
+    return await this.authService.bootstrapPlatformAdmin(body);
+  }
   @Post('login')
   login(@Body() loginDto: LoginDto): Promise<TokenResponseDto> {
     return this.authService.login(loginDto);
