@@ -12,9 +12,6 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const globalPrefix = 'api';
   app.setGlobalPrefix(globalPrefix);
-  const port = process.env.NOTIFICATIONS_PORT
-    ? Number(process.env.NOTIFICATIONS_PORT)
-    : 3005;
   // Microservice RMQ
   const rmqUser =
     process.env.RABBITMQ_URL ?? 'amqp://guest:guest@localhost:5672';
