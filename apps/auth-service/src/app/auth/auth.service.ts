@@ -66,9 +66,18 @@ export class AuthService {
       })
     );
 
-    await this.sendEmailVerification(user);
+    const newUser = {
+      ...user,
+      password: rDto.password,
+    };
 
-    return this.issueTokens(user.id, user.email, user.roles);
+    await this.sendEmailVerification(newUser);
+
+    return {
+      success: true,
+      message:
+        'Account creation successful: Check your email for account validation ',
+    };
   }
 
   async login(dto: LoginDto): Promise<TokenResponseDto> {
@@ -126,6 +135,8 @@ export class AuthService {
     const verifyUrl = `${this.publicUrl()}/api/auth/verify-email?token=${encodeURIComponent(
       verifyToken
     )}`;
+    console.log(' .     ');
+    console.log('includePasswordInEmail', this.includePasswordInEmail());
     // --- publish event to notifications ---
     const event: UserSellerRegisteredEvent = {
       userId: user.id,
