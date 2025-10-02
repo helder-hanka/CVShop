@@ -22,7 +22,7 @@ export class MailerController {
       event.verifyUrl
     }" style="display: inline-block; padding: 10px 15px; background-color: #007BFF; color: #fff; text-decoration: none; border-radius: 5px;">Verify Email</a>
     ${
-      event.role !== Role.CUSTOMER && includPwd && event.plainPassword
+      includPwd && event.plainPassword
         ? `<p>Your temporary password is: <strong>${event.plainPassword}</strong></p>`
         : ''
     }
