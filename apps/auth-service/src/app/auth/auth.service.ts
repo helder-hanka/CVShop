@@ -140,8 +140,6 @@ export class AuthService {
     const verifyUrl = `${this.publicUrl()}/api/auth/verify-email?token=${encodeURIComponent(
       verifyToken
     )}`;
-    console.log(' .     ');
-    console.log('includePasswordInEmail', this.includePasswordInEmail());
     // --- publish event to notifications ---
     const event: UserSellerRegisteredEvent = {
       userId: user.id,
