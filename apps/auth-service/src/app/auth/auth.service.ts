@@ -68,7 +68,6 @@ export class AuthService {
         ...rDto,
         password: passwordHash,
         roles: role,
-        emailVerified: false,
       })
     );
 
