@@ -1,26 +1,57 @@
-import { Injectable } from '@nestjs/common';
-import { CreateAdminDto } from './dto/create-admin.dto';
-import { UpdateAdminDto } from './dto/update-admin.dto';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User } from '../auth/entities/user.entity';
+import { Repository } from 'typeorm';
+import { ListUsersDto } from './dto/create-admin.dto';
 
 @Injectable()
 export class AdminService {
-  create(createAdminDto: CreateAdminDto) {
-    return 'This action adds a new admin';
-  }
+  constructor(@InjectRepository(User) private users: Repository<User>) {}
+  async listUsers(filters: ListUsersDto): Promise<Omit<User, 'password'>[]> {
+    const {
+      role,
+      isSuperAdmin,
+      emailVerified,
+      status,
+      salesStatus,
+      city,
+      country,
+      page = 1,
+      limit = 20,
+    } = filters;
+    const qb = this.users.createQueryBuilder('u');
+    console.log('Filters:', filters);
 
-  findAll() {
-    return `This action returns all admin`;
-  }
+    if (role) {
+      qb.andWhere(':role = ANY (u.roles)', { role });
+    }
+    if (isSuperAdmin !== undefined) {
+      qb.andWhere('u.isSuperAdmin = :isSuperAdmin', { isSuperAdmin });
+    }
+    if (emailVerified !== undefined) {
+      qb.andWhere('u.emailVerified = :emailVerified', { emailVerified });
+    }
+    if (status) {
+      qb.andWhere('u.status = :status', { status });
+    }
+    if (salesStatus) {
+      qb.andWhere('u.salesStatus = :salesStatus', { salesStatus });
+    }
+    if (city) {
+      qb.andWhere('u.city ILIKE :city', { city: `%${city}%` });
+    }
+    if (country) {
+      qb.andWhere('u.country ILIKE :country', { country: `%${country}%` });
+    }
 
-  findOne(id: number) {
-    return `This action returns a #${id} admin`;
-  }
+    qb.orderBy('u.createdAt', 'DESC')
+      .take(Math.min(limit, 20))
+      .skip((page - 1) * Math.min(limit, 20));
 
-  update(id: number, updateAdminDto: UpdateAdminDto) {
-    return `This action updates a #${id} admin`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} admin`;
+    const users = await qb.getMany();
+    if (users.length === 0) {
+      throw new BadRequestException('No users found with the given filters');
+    }
+    return users.map(({ password, ...rest }) => rest);
   }
 }
