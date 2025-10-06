@@ -1,6 +1,6 @@
 import { Controller } from '@nestjs/common';
 import { MailerService } from './mailer.service';
-import { Role, UserSellerRegisteredEvent } from '@cvshop/shared-dto';
+import { UserSellerRegisteredEvent } from '@cvshop/shared-dto';
 import { EventPattern, Payload } from '@nestjs/microservices';
 
 @Controller()
