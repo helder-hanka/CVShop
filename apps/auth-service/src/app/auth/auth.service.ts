@@ -191,7 +191,7 @@ export class AuthService {
     };
     // fire-and-forget
     this.notifications.emit<UserSellerRegisteredEvent>(
-      'user.seller.registered',
+      'users.registered',
       event
     );
   }
