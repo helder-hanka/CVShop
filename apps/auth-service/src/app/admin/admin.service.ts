@@ -7,6 +7,7 @@ import { ListUsersDto } from './dto/create-admin.dto';
 @Injectable()
 export class AdminService {
   constructor(@InjectRepository(User) private users: Repository<User>) {}
+
   async listUsers(filters: ListUsersDto): Promise<Omit<User, 'password'>[]> {
     const {
       role,
@@ -19,8 +20,8 @@ export class AdminService {
       page = 1,
       limit = 20,
     } = filters;
+
     const qb = this.users.createQueryBuilder('u');
-    console.log('Filters:', filters);
 
     if (role) {
       qb.andWhere(':role = ANY (u.roles)', { role });
@@ -53,5 +54,14 @@ export class AdminService {
       throw new BadRequestException('No users found with the given filters');
     }
     return users.map(({ password, ...rest }) => rest);
+  }
+
+  async getUserById(id: string): Promise<Omit<User, 'password'>> {
+    const user = await this.users.findOne({ where: { id } });
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+    const { password, ...rest } = user;
+    return rest;
   }
 }

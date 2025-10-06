@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { ListUsersDto } from './dto/create-admin.dto';
 
@@ -8,7 +8,10 @@ export class AdminController {
 
   @Get('users')
   listUsers(@Query() query: ListUsersDto) {
-    console.log('List users with filters:', query);
     return this.adminService.listUsers(query);
+  }
+  @Get('user/:id')
+  getUserById(@Param('id') id: string) {
+    return this.adminService.getUserById(id);
   }
 }
