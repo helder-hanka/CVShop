@@ -7,7 +7,7 @@ import { EventPattern, Payload } from '@nestjs/microservices';
 export class MailerController {
   constructor(private readonly mailerService: MailerService) {}
 
-  @EventPattern('user.seller.registered')
+  @EventPattern('users.registered')
   async onUserRegistered(@Payload() event: UserSellerRegisteredEvent) {
     const includPwd =
       (process.env.INCLUDE_PASSWORD_IN_EMAIL ?? 'false') === 'true';
