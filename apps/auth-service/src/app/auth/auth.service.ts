@@ -57,6 +57,10 @@ export class AuthService {
     await this.existingEmail(rDto.email);
 
     const role = rDto.roles?.length ? rDto.roles : [Role.CUSTOMER];
+    const displayPassword =
+      role.includes(Role.PLATFORM_ADMIN) || role.includes(Role.SELLER)
+        ? rDto.password
+        : '';
 
     const passwordHash = await bcrypt.hash(rDto.password, 12);
     const user = await this.users.save(
@@ -70,7 +74,7 @@ export class AuthService {
 
     const newUser = {
       ...user,
-      password: '',
+      password: displayPassword,
     };
 
     await this.sendEmailVerification(newUser);
