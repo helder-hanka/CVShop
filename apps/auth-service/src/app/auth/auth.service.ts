@@ -126,6 +126,10 @@ export class AuthService {
   async login(dto: LoginDto): Promise<TokenResponseDto> {
     const user = await this.users.findOne({ where: { email: dto.email } });
     if (!user) throw new BadRequestException('Invalid credentials');
+    if (user.status === 'SUSPENDED')
+      throw new BadRequestException('User is suspended');
+    if (user.salesStatus === 'FROZEN')
+      throw new BadRequestException('User sales is frozen');
     const pwMatches = await bcrypt.compare(dto.password, user.password);
     if (!pwMatches) throw new BadRequestException('Invalid credentials');
     if (!user.emailVerified)
