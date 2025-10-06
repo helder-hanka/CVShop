@@ -6,10 +6,10 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-type UserStatus = 'ACTIVE' | 'SUSPENDED';
-type SalesStatus = 'OPEN' | 'FROZEN';
-const userEnum = ['ACTIVE', 'SUSPENDED'];
-const salesEnum = ['OPEN', 'FROZEN'];
+export type UserStatus = 'ACTIVE' | 'SUSPENDED';
+export type SalesStatus = 'OPEN' | 'FROZEN';
+export const userEnum = ['ACTIVE', 'SUSPENDED'];
+export const salesEnum = ['OPEN', 'FROZEN'];
 
 @Entity('users')
 export class User {

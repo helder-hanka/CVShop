@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../auth/entities/user.entity';
 import { Repository } from 'typeorm';
 import { ListUsersDto } from './dto/create-admin.dto';
+import { UpdateSalesStatusDto } from './dto/update-admin.dto';
 
 @Injectable()
 export class AdminService {
@@ -61,6 +62,22 @@ export class AdminService {
     if (!user) {
       throw new BadRequestException('User not found');
     }
+    const { password, ...rest } = user;
+    return rest;
+  }
+
+  async setSalesStatusStatus(
+    id: string,
+    set: UpdateSalesStatusDto
+  ): Promise<Omit<User, 'password'>> {
+    const { salesStatus, status } = set;
+    const user = await this.users.findOne({ where: { id } });
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+    user.salesStatus = salesStatus;
+    user.status = status;
+    await this.users.save(user);
     const { password, ...rest } = user;
     return rest;
   }

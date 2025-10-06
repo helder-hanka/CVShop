@@ -3,3 +3,11 @@ export enum Role {
   SELLER = 'SELLER',
   PLATFORM_ADMIN = 'PLATFORM_ADMIN',
 }
+export enum SalesStatus {
+  OPEN = 'OPEN',
+  FROZEN = 'FROZEN',
+}
+export enum UserStatus {
+  ACTIVE = 'ACTIVE',
+  SUSPENDED = 'SUSPENDED',
+}
