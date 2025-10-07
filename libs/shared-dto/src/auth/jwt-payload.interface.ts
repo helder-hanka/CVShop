@@ -1,8 +1,10 @@
+import { Role, SalesStatus, UserStatus } from './roles.enum';
+
 export interface JwtPayload {
   sub: string;
   email: string;
-  role: string[];
-  status: 'ACTIVE' | 'SUSPENDED';
-  salesStatus?: 'OPEN' | 'FROZEN';
+  role: Role[];
+  status: UserStatus;
+  salesStatus: SalesStatus;
   jti: string;
 }
