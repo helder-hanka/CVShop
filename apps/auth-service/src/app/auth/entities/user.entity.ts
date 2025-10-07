@@ -1,3 +1,4 @@
+import { Role, SalesStatus, UserStatus } from '@cvshop/shared-dto';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -5,12 +6,6 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-
-export type UserStatus = 'ACTIVE' | 'SUSPENDED';
-export type SalesStatus = 'OPEN' | 'FROZEN';
-export const userEnum = ['ACTIVE', 'SUSPENDED'];
-export const salesEnum = ['OPEN', 'FROZEN'];
-
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -49,13 +44,13 @@ export class User {
   dateOfBirth?: Date;
 
   @Column({ nullable: true })
-  @Column('text', { array: true, default: ['CUSTOMER'] })
-  roles!: string[];
+  @Column('text', { array: true, default: [Role.CUSTOMER] })
+  roles!: Role[];
 
-  @Column({ type: 'enum', enum: userEnum, default: 'ACTIVE' })
+  @Column({ type: 'enum', enum: UserStatus, default: UserStatus.ACTIVE })
   status!: UserStatus;
 
-  @Column({ type: 'enum', enum: salesEnum, default: 'OPEN' })
+  @Column({ type: 'enum', enum: SalesStatus, default: SalesStatus.OPEN })
   salesStatus!: SalesStatus;
 
   @Column({ default: false })
