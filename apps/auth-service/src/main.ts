@@ -13,6 +13,13 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   const globalPrefix = 'api';
   app.setGlobalPrefix(globalPrefix);
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+      transformOptions: { enableImplicitConversion: true },
+    })
+  );
   // const port = process.env.PORT || 3000;
   const port = process.env.PORT ? Number(process.env.PORT) : 3000;
   await app.listen(port);
