@@ -3,7 +3,13 @@ import { CreateAdminDto, CreateAuthDto } from './dto/create-auth.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ArrayContains, LessThan, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
-import { LoginDto, Role, UserSellerRegisteredEvent } from '@cvshop/shared-dto';
+import {
+  LoginDto,
+  Role,
+  SalesStatus,
+  UserSellerRegisteredEvent,
+  UserStatus,
+} from '@cvshop/shared-dto';
 import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 import { RefreshToken } from './entities/refresh-token.entity';
@@ -134,7 +140,13 @@ export class AuthService {
     if (!pwMatches) throw new BadRequestException('Invalid credentials');
     if (!user.emailVerified)
       throw new BadRequestException('Email not verified');
-    return this.issueTokens(user.id, user.email, user.roles);
+    return this.issueTokens(
+      user.id,
+      user.email,
+      user.roles,
+      user.status,
+      user.salesStatus
+    );
   }
 
   async refreshTokens(token: string): Promise<TokenResponseDto> {
@@ -142,8 +154,10 @@ export class AuthService {
       const payload = await this.jwt.verifyAsync<{
         sub: string;
         email: string;
-        roles: string[];
+        roles: Role[];
         jti: string;
+        status: UserStatus;
+        salesStatus: SalesStatus;
       }>(token, {
         secret: this.refreshSecret(),
       });
@@ -160,7 +174,13 @@ export class AuthService {
       // await this.tokens.delete({ id: payload.jti });
       await this.pruneExpiredTokens();
       // issue new tokens
-      return this.issueTokens(payload.sub, payload.email, payload.roles);
+      return this.issueTokens(
+        payload.sub,
+        payload.email,
+        payload.roles,
+        payload.status,
+        payload.salesStatus
+      );
     } catch {
       throw new BadRequestException('Invalid token');
     }
@@ -202,7 +222,9 @@ export class AuthService {
   private async issueTokens(
     userId: string,
     email: string,
-    roles: string[]
+    roles: Role[],
+    status: UserStatus,
+    salesStatus: SalesStatus
   ): Promise<TokenResponseDto> {
     const jti = randomUUID();
 
@@ -215,11 +237,11 @@ export class AuthService {
     await this.tokens.save(tokenEntity);
 
     const accessToken = await this.jwt.signAsync(
-      { sub: userId, email, roles },
+      { sub: userId, email, roles, status, salesStatus },
       { secret: this.accessSecret(), expiresIn: this.accessTtl() }
     );
     const refreshToken = await this.jwt.signAsync(
-      { sub: userId, email, roles, jti },
+      { sub: userId, email, roles, status, salesStatus, jti },
       {
         secret: this.refreshSecret(),
         expiresIn: this.refreshTokenTtlMs() / 1000,

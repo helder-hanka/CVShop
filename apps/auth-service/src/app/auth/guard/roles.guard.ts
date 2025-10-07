@@ -7,7 +7,15 @@ import {
 import { Reflector } from '@nestjs/core';
 import { Observable } from 'rxjs';
 import { ROLES_KEY } from '../decorators/roles.decorator';
-import { Role } from '@cvshop/shared-dto';
+import { Role, SalesStatus, UserStatus } from '@cvshop/shared-dto';
+
+type JwtUser = {
+  sub: string;
+  email: string;
+  roles: Role[];
+  status: UserStatus;
+  salesStatus: SalesStatus | undefined;
+};
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -21,13 +29,12 @@ export class RolesGuard implements CanActivate {
     ]);
     if (!requiredRoles) return true;
     const req = ctx.switchToHttp().getRequest();
-    const user = req.user as {
-      role: Role;
-      status: 'ACTIVE' | 'SUSPENDED';
-    };
+    const user = req.user as JwtUser;
     if (!user) throw new ForbiddenException('Not authenticated');
     if (user.status === 'SUSPENDED')
       throw new ForbiddenException(`Account ${user.status}`);
-    return requiredRoles.includes(user.role);
+    const hasRole = user.roles.some((role) => requiredRoles.includes(role));
+    if (!hasRole) throw new ForbiddenException('Insufficient role');
+    return hasRole;
   }
 }
