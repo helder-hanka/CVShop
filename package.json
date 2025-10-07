@@ -35,6 +35,7 @@
     "@types/jest": "^30.0.0",
     "@types/node": "20.19.9",
     "@types/nodemailer": "^7.0.2",
+    "@types/passport-jwt": "^4.0.1",
     "eslint": "^9.8.0",
     "eslint-config-prettier": "^10.0.0",
     "jest": "^30.0.2",
@@ -58,6 +59,7 @@
     "@nestjs/microservices": "^11.1.6",
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.0.0",
+    "@nestjs/swagger": "^11.2.0",
     "@nestjs/typeorm": "^11.0.0",
     "amqp-connection-manager": "^4.1.14",
     "amqplib": "^0.10.9",
@@ -72,6 +74,7 @@
     "pg": "^8.16.3",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.0",
+    "swagger-ui-express": "^5.0.1",
     "tslib": "^2.6.2",
     "typeorm": "^0.3.27"
   }
