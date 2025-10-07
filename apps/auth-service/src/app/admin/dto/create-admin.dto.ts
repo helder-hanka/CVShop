@@ -15,45 +15,45 @@ import { ApiProperty } from '@nestjs/swagger';
 export class CreateAdminDto {}
 
 export class ListUsersDto {
-  @ApiProperty({ enum: Role, isArray: true })
+  @ApiProperty({ enum: Role, isArray: true, required: false })
   @IsOptional()
   @IsEnum(Role)
   role?: Role;
 
-  @ApiProperty({ enum: UserStatus })
+  @ApiProperty({ enum: UserStatus, required: false })
   @IsOptional()
   @IsBoolean()
   @Transform(({ value }) => value === 'true' || value === true)
   isSuperAdmin?: boolean;
 
-  @ApiProperty({ enum: UserStatus })
+  @ApiProperty({ enum: UserStatus, required: false })
   @IsOptional()
   @IsBoolean()
   @Transform(({ value }) => value === 'true' || value === true)
   emailVerified?: boolean;
 
-  @ApiProperty({ enum: UserStatus })
+  @ApiProperty({ enum: UserStatus, required: false })
   @IsOptional()
   @IsEnum(UserStatus)
   status?: UserStatus;
 
-  @ApiProperty({ enum: SalesStatus })
+  @ApiProperty({ enum: SalesStatus, required: false })
   @IsOptional()
   @IsEnum(SalesStatus)
   salesStatus?: SalesStatus;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   @IsOptional()
   @IsString()
   city?: string;
-
-  @ApiProperty()
+  // ApiProperty() is a optional decorator that adds metadata for Swagger documentation
+  @ApiProperty({ required: false })
   @IsOptional()
   @IsString()
   country?: string;
 
   // pagination (optionnelle) - 20 par page
-  @ApiProperty()
+  @ApiProperty({ required: false })
   @IsOptional()
   @IsInt()
   @Min(1)
@@ -61,7 +61,7 @@ export class ListUsersDto {
   page?: number = 1;
 
   // forçage de la taille à 20 mais on laisse le champ si tu veux l'exposer plus tard
-  @ApiProperty()
+  @ApiProperty({ required: false })
   @IsOptional()
   @IsInt()
   @IsPositive()
