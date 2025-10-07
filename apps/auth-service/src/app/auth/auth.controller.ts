@@ -7,7 +7,11 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { CreateAdminDto, CreateAuthDto } from './dto/create-auth.dto';
+import {
+  CreateAdminDto,
+  CreateAuthDto,
+  TokenRequestDto,
+} from './dto/create-auth.dto';
 import { LoginDto, TokenResponseDto } from '@cvshop/shared-dto';
 @Controller('auth')
 export class AuthController {
@@ -27,19 +31,19 @@ export class AuthController {
   }
 
   @Get('verify-email')
-  async verifyEmail(@Query('token') token: string) {
+  async verifyEmail(@Query('token') token: TokenRequestDto) {
     if (!token) throw new BadRequestException('Token is required');
     return this.authService.verifyEmail(token);
   }
 
   @Post('RefreshToken')
-  refreshToken(@Body('refreshToken') refreshToken: string) {
+  refreshToken(@Body() refreshToken: TokenRequestDto) {
     if (!refreshToken)
       throw new BadRequestException('Refresh token is required');
     return this.authService.refreshTokens(refreshToken);
   }
   @Post('logout')
-  logout(@Body('refreshToken') refreshToken: string) {
+  logout(@Body() refreshToken: TokenRequestDto) {
     if (!refreshToken)
       throw new BadRequestException('Refresh token is required');
     return this.authService.logout(refreshToken);

@@ -1,5 +1,9 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { CreateAdminDto, CreateAuthDto } from './dto/create-auth.dto';
+import {
+  CreateAdminDto,
+  CreateAuthDto,
+  TokenRequestDto,
+} from './dto/create-auth.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ArrayContains, LessThan, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
@@ -149,7 +153,7 @@ export class AuthService {
     );
   }
 
-  async refreshTokens(token: string): Promise<TokenResponseDto> {
+  async refreshTokens(token: TokenRequestDto): Promise<TokenResponseDto> {
     try {
       const payload = await this.jwt.verifyAsync<{
         sub: string;
@@ -158,7 +162,7 @@ export class AuthService {
         jti: string;
         status: UserStatus;
         salesStatus: SalesStatus;
-      }>(token, {
+      }>(token.token, {
         secret: this.refreshSecret(),
       });
       const stored = await this.tokens.findOne({
@@ -250,9 +254,9 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
-  async verifyEmail(token: string) {
+  async verifyEmail(token: TokenRequestDto) {
     try {
-      const payload = await this.jwt.verifyAsync(token, {
+      const payload = await this.jwt.verifyAsync(token.token, {
         secret: this.emailVerifySecret(),
       });
       const user = await this.users.findOne({
@@ -268,10 +272,10 @@ export class AuthService {
       throw new BadRequestException('Invalid token or expired');
     }
   }
-  async logout(refreshToken: string) {
+  async logout(refreshToken: TokenRequestDto) {
     try {
       const payload = await this.jwt.verifyAsync<{ jti: string; sub: string }>(
-        refreshToken,
+        refreshToken.token,
         {
           secret: this.refreshSecret(),
         }
