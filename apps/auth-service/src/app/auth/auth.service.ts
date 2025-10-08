@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import {
   CreateAdminDto,
   CreateAuthDto,
+  CreateUsersSellerAdminDto,
   TokenRequestDto,
 } from './dto/create-auth.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -63,31 +64,50 @@ export class AuthService {
     return 7 * 24 * 60 * 60 * 1000;
   }
 
-  async register(rDto: CreateAuthDto) {
+  async createCustomer(rDto: CreateAuthDto) {
     await this.existingEmail(rDto.email);
-
-    const role = rDto.roles?.length ? rDto.roles : [Role.CUSTOMER];
-    const displayPassword =
-      role.includes(Role.PLATFORM_ADMIN) || role.includes(Role.SELLER)
-        ? rDto.password
-        : '';
-
     const passwordHash = await bcrypt.hash(rDto.password, 12);
     const user = await this.users.save(
       this.users.create({
         ...rDto,
         password: passwordHash,
-        roles: role,
+        roles: [Role.CUSTOMER],
+        emailVerified: false,
+        isSuperAdmin: false,
       })
     );
 
-    const newUser = {
-      ...user,
-      password: displayPassword,
+    await this.sendEmailVerification(user.id, user.email, Role.CUSTOMER);
+
+    return {
+      success: true,
+      message:
+        'Account creation successful: Check your email for account validation ',
     };
+  }
 
-    await this.sendEmailVerification(newUser);
+  async createUsersSellerAdmin(adminDto: CreateUsersSellerAdminDto) {
+    await this.existingEmail(adminDto.email);
+    const isSuperAdmin =
+      adminDto.roles.includes(Role.PLATFORM_ADMIN) &&
+      adminDto.isSuperAdmin === true;
+    const passwordHash = await bcrypt.hash(adminDto.password, 12);
+    const user = await this.users.save(
+      this.users.create({
+        email: adminDto.email,
+        password: passwordHash,
+        roles: adminDto.roles,
+        emailVerified: false,
+        isSuperAdmin: isSuperAdmin,
+      })
+    );
 
+    await this.sendEmailVerification(
+      user.id,
+      adminDto.email,
+      user.roles[0],
+      adminDto.password
+    );
     return {
       success: true,
       message:
@@ -120,12 +140,12 @@ export class AuthService {
       })
     );
 
-    const newUser = {
-      ...user,
-      password: '',
-    };
-
-    await this.sendEmailVerification(newUser);
+    await this.sendEmailVerification(
+      user.id,
+      adminDto.email,
+      Role.PLATFORM_ADMIN,
+      adminDto.password
+    );
     return {
       success: true,
       message:
@@ -195,9 +215,14 @@ export class AuthService {
     if (exists) throw new BadRequestException('Email already exists');
   }
 
-  private async sendEmailVerification(user: User) {
+  private async sendEmailVerification(
+    userId: string,
+    email: string,
+    role: Role,
+    password?: string
+  ) {
     const verifyToken = await this.jwt.signAsync(
-      { sub: user.id, email: user.email },
+      { sub: userId, email: email },
       {
         secret: this.emailVerifySecret(),
         expiresIn: this.emailVerifyExpire(),
@@ -208,13 +233,11 @@ export class AuthService {
     )}`;
     // --- publish event to notifications ---
     const event: UserSellerRegisteredEvent = {
-      userId: user.id,
-      email: user.email,
-      role: user.roles[0],
+      userId: userId,
+      email: email,
+      role: role,
       verifyUrl,
-      ...(this.includePasswordInEmail()
-        ? { plainPassword: user.password }
-        : {}),
+      ...(this.includePasswordInEmail() ? { plainPassword: password } : {}),
     };
     // fire-and-forget
     this.notifications.emit<UserSellerRegisteredEvent>(

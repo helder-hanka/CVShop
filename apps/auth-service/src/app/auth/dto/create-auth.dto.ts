@@ -16,11 +16,18 @@ export class CreateAuthDto {
   @IsString()
   @MinLength(6)
   password!: string;
+}
 
+export class CreateUsersSellerAdminDto extends CreateAuthDto {
   @ApiProperty({ enum: Role, isArray: true })
   @IsOptional()
   @IsEnum(Role, { each: true })
-  roles?: Role[];
+  roles: Role[];
+
+  @ApiProperty()
+  @IsOptional()
+  @IsString()
+  isSuperAdmin?: boolean;
 }
 
 export class CreateAdminDto extends CreateAuthDto {
