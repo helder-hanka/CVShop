@@ -45,6 +45,24 @@ export class AdminService {
     if (country) {
       qb.andWhere('u.country ILIKE :country', { country: `%${country}%` });
     }
+    const USER_BASE = ['u']; // ou une liste réduite si tu préfères
+    const CREATOR_BASE = [
+      'creator.id',
+      'creator.firstName',
+      'creator.lastName',
+      'creator.email',
+      'creator.roles',
+      'creator.status',
+      'creator.salesStatus',
+      'creator.isSuperAdmin',
+      'creator.createdAt',
+      'creator.updatedAt',
+    ];
+    const UPD_BASE = ['upd.id', 'upd.firstName', 'upd.lastName', 'upd.email'];
+
+    qb.leftJoin('u.createdByAdmin', 'creator')
+      .leftJoin('u.updatedByAdmin', 'upd')
+      .select([...USER_BASE, ...CREATOR_BASE, ...UPD_BASE]);
 
     qb.orderBy('u.createdAt', 'DESC')
       .take(Math.min(limit, 20))
@@ -58,7 +76,26 @@ export class AdminService {
   }
 
   async getUserById(id: string): Promise<Omit<User, 'password'>> {
-    const user = await this.users.findOne({ where: { id } });
+    const creatorSelect = {
+      id: true,
+      firstName: true,
+      lastName: true,
+      email: true,
+      roles: true,
+      status: true,
+      salesStatus: true,
+      isSuperAdmin: true,
+      createdAt: true,
+      updatedAt: true,
+    };
+    const user = await this.users.findOne({
+      where: { id },
+      relations: ['createdByAdmin', 'updatedByAdmin'],
+      select: {
+        createdByAdmin: creatorSelect,
+        updatedByAdmin: creatorSelect,
+      },
+    });
     if (!user) {
       throw new BadRequestException('User not found');
     }

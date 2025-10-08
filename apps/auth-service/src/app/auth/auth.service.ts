@@ -86,7 +86,10 @@ export class AuthService {
     };
   }
 
-  async createUsersSellerAdmin(adminDto: CreateUsersSellerAdminDto) {
+  async createUsersSellerAdmin(
+    adminDto: CreateUsersSellerAdminDto,
+    createdByAdminId: string
+  ) {
     await this.existingEmail(adminDto.email);
     const isSuperAdmin =
       adminDto.roles.includes(Role.PLATFORM_ADMIN) &&
@@ -99,6 +102,7 @@ export class AuthService {
         roles: adminDto.roles,
         emailVerified: false,
         isSuperAdmin: isSuperAdmin,
+        createdByAdminId,
       })
     );
 

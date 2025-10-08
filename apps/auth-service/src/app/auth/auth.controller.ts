@@ -6,6 +6,7 @@ import {
   Query,
   BadRequestException,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import {
@@ -34,8 +35,15 @@ export class AuthController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.PLATFORM_ADMIN)
   @Post('register-seller-admin')
-  registerSellerAdmin(@Body() createAuthDto: CreateUsersSellerAdminDto) {
-    return this.authService.createUsersSellerAdmin(createAuthDto);
+  registerSellerAdmin(
+    @Body() createAuthDto: CreateUsersSellerAdminDto,
+    @Req() req: any
+  ) {
+    const currentAdminId = req.user.sub as string;
+    return this.authService.createUsersSellerAdmin(
+      createAuthDto,
+      currentAdminId
+    );
   }
   @Post('bootstrap-platform-admin')
   async bootstrapAdmin(@Body() body: CreateAdminDto) {

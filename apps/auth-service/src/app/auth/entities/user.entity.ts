@@ -5,6 +5,8 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToOne,
+  OneToMany,
 } from 'typeorm';
 @Entity('users')
 export class User {
@@ -58,6 +60,30 @@ export class User {
 
   @Column({ default: false })
   emailVerified!: boolean;
+
+  @Column({ type: 'uuid', nullable: true })
+  createdByAdminId?: string | null;
+
+  @Column({ type: 'uuid', nullable: true })
+  updatedByAdminId?: string | null;
+
+  @ManyToOne(() => User, (u) => u.createdUsers, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  createdByAdmin?: User;
+
+  @OneToMany(() => User, (u) => u.createdByAdmin)
+  createdUsers?: User[];
+
+  @ManyToOne(() => User, (u) => u.updatedUsers, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  updatedByAdmin?: User;
+
+  @OneToMany(() => User, (u) => u.updatedByAdmin)
+  updatedUsers?: User[];
 
   @CreateDateColumn()
   createdAt!: Date;

@@ -6,6 +6,7 @@ import {
   MinLength,
   IsOptional,
   IsEnum,
+  IsBoolean,
 } from 'class-validator';
 export class CreateAuthDto {
   @ApiProperty()
@@ -19,14 +20,14 @@ export class CreateAuthDto {
 }
 
 export class CreateUsersSellerAdminDto extends CreateAuthDto {
-  @ApiProperty({ enum: Role, isArray: true })
+  @ApiProperty({ enum: Role, isArray: true, example: [Role.PLATFORM_ADMIN] })
   @IsOptional()
   @IsEnum(Role, { each: true })
   roles: Role[];
 
-  @ApiProperty()
+  @ApiProperty({ required: false, example: false })
   @IsOptional()
-  @IsString()
+  @IsBoolean()
   isSuperAdmin?: boolean;
 }
 
