@@ -45,7 +45,6 @@ export class User {
   @Column({ type: 'date', nullable: true })
   dateOfBirth?: Date;
 
-  @Column({ nullable: true })
   @Column('text', { array: true, default: [Role.CUSTOMER] })
   roles!: Role[];
 
