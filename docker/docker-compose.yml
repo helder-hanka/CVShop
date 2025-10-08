@@ -68,6 +68,8 @@ services:
       # APP_URL: ${APP_URL}
       # FRONT_URL: ${FRONT_URL}
       # EMAIL_CONFIRM_TTL_MIN: ${EMAIL_CONFIRM_TTL_MIN}
+    volumes:
+      - ${UPLOADS_DIR}:/app/uploads
     ports: ["${AUTH_PORT}:3001"]
     depends_on: [postgres]
 
