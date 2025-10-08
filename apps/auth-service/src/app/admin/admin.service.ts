@@ -72,6 +72,7 @@ export class AdminService {
     if (users.length === 0) {
       throw new BadRequestException('No users found with the given filters');
     }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return users.map(({ password, ...rest }) => rest);
   }
 
@@ -99,6 +100,7 @@ export class AdminService {
     if (!user) {
       throw new BadRequestException('User not found');
     }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...rest } = user;
     return rest;
   }
@@ -115,6 +117,7 @@ export class AdminService {
     user.salesStatus = salesStatus;
     user.status = status;
     await this.users.save(user);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...rest } = user;
     return rest;
   }
