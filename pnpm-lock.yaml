@@ -62,6 +62,9 @@ importers:
       joi:
         specifier: ^18.0.1
         version: 18.0.1
+      multer:
+        specifier: ^2.0.2
+        version: 2.0.2
       nodemailer:
         specifier: ^7.0.6
         version: 7.0.6
@@ -10215,7 +10218,7 @@ snapshots:
 
   compressible@2.0.18:
     dependencies:
-      mime-db: 1.52.0
+      mime-db: 1.54.0
 
   compression@1.8.1:
     dependencies:
