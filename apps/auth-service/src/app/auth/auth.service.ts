@@ -226,7 +226,6 @@ export class AuthService {
     );
   }
 
-  //update password
   async updatePassword(
     userId: string,
     updatePasswordDto: UpdatePasswordDto
