@@ -7,20 +7,26 @@ import {
   BadRequestException,
   UseGuards,
   Req,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import {
   CreateAdminDto,
   CreateAuthDto,
+  CreateProfileUsersDto,
   CreateUsersSellerAdminDto,
   TokenRequestDto,
 } from './dto/create-auth.dto';
 import { LoginDto, TokenResponseDto } from '@cvshop/shared-dto';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from './guard/jwt-auth.guard';
 import { RolesGuard } from './guard/roles.guard';
 import { Role } from '@cvshop/shared-dto';
 import { Roles } from './decorators/roles.decorator';
+import { avatarMulterOptions } from '../files/multer.config';
+import { FileInterceptor } from '@nestjs/platform-express';
+import type { Express } from 'express';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -44,6 +50,34 @@ export class AuthController {
       createAuthDto,
       currentAdminId
     );
+  }
+  @ApiBody({
+    description: 'Profile data',
+    type: CreateProfileUsersDto,
+  })
+  @ApiConsumes('multipart/form-data')
+  @ApiTags('auth')
+  @ApiBearerAuth('access-token')
+  @UseGuards(JwtAuthGuard)
+  @Roles(Role.CUSTOMER, Role.SELLER, Role.PLATFORM_ADMIN)
+  @UseInterceptors(FileInterceptor('avatar', avatarMulterOptions))
+  @Post('create-profile')
+  createProfileUsers(
+    @Body() profileDto: CreateProfileUsersDto,
+    @UploadedFile() file: Express.Multer.File,
+    @Req() req: any
+  ) {
+    const currentUserId = req.user.sub as string;
+    return this.authService.upSetProfile(currentUserId, file, profileDto);
+  }
+  @ApiTags('auth')
+  @ApiBearerAuth('access-token')
+  @UseGuards(JwtAuthGuard)
+  @Roles(Role.CUSTOMER, Role.SELLER, Role.PLATFORM_ADMIN)
+  @Get('profile-me')
+  getProfile(@Req() req: any) {
+    const currentUserId = req.user.sub as string;
+    return this.authService.getUserById(currentUserId);
   }
   @Post('bootstrap-platform-admin')
   async bootstrapAdmin(@Body() body: CreateAdminDto) {

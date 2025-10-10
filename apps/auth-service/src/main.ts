@@ -8,10 +8,18 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app/app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { join } from 'path';
+import { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+  const uploadDir = process.env.UPLOADS_DIR ?? join(process.cwd(), 'uploads');
+  app.useStaticAssets(uploadDir, {
+    prefix: '/static/',
+  });
+
   const globalPrefix = 'api';
   app.setGlobalPrefix(globalPrefix);
   app.useGlobalPipes(

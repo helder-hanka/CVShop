@@ -41,3 +41,45 @@ export class TokenRequestDto {
   @IsString()
   token!: string;
 }
+
+export class CreateProfileUsersDto {
+  @ApiProperty()
+  @IsString()
+  firstName!: string;
+
+  @ApiProperty()
+  @IsString()
+  lastName!: string;
+
+  // @ApiProperty({ required: false, format: 'binary' })
+  // @IsString()
+  // @IsOptional()
+  // avatarUrl?: string;
+  @ApiProperty({ required: false, format: 'binary', type: 'string' })
+  @IsString()
+  @IsOptional()
+  avatar?: string;
+
+  @ApiProperty()
+  @IsString()
+  phoneNumber!: string;
+
+  @ApiProperty()
+  @IsString()
+  address!: string;
+
+  @ApiProperty()
+  @IsString()
+  codePostal!: string;
+
+  @ApiProperty()
+  @IsString()
+  city!: string;
+
+  @ApiProperty()
+  @IsString()
+  country!: string;
+
+  @ApiProperty({ required: false })
+  dateOfBirth?: Date;
+}

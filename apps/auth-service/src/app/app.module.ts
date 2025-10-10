@@ -8,6 +8,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './auth/entities/user.entity';
 import { RefreshToken } from './auth/entities/refresh-token.entity';
 import { AdminModule } from './admin/admin.module';
+import { StorageService } from './files/storage.service';
 
 @Module({
   imports: [
@@ -30,6 +31,6 @@ import { AdminModule } from './admin/admin.module';
     AdminModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, StorageService],
 })
 export class AppModule {}

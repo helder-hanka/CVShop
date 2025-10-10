@@ -25,6 +25,9 @@ export class User {
   phoneNumber!: string;
 
   @Column({ type: 'text', nullable: true })
+  avatarKey?: string;
+
+  @Column({ type: 'text', nullable: true })
   firstName!: string;
 
   @Column({ type: 'text', nullable: true })

@@ -1,7 +1,12 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import {
   CreateAdminDto,
   CreateAuthDto,
+  CreateProfileUsersDto,
   CreateUsersSellerAdminDto,
   TokenRequestDto,
 } from './dto/create-auth.dto';
@@ -22,6 +27,8 @@ import { ClientProxy } from '@nestjs/microservices';
 import { Inject } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { TokenResponseDto } from '@cvshop/shared-dto';
+import { StorageService } from '../files/storage.service';
+import type { Express } from 'express';
 
 @Injectable()
 export class AuthService {
@@ -29,7 +36,8 @@ export class AuthService {
     @InjectRepository(User) private users: Repository<User>,
     @InjectRepository(RefreshToken) private tokens: Repository<RefreshToken>,
     private jwt: JwtService,
-    @Inject('NOTIFICATIONS') private readonly notifications: ClientProxy
+    @Inject('NOTIFICATIONS') private readonly notifications: ClientProxy,
+    private storage: StorageService
   ) {}
 
   private emailVerifySecret() {
@@ -117,6 +125,46 @@ export class AuthService {
       message:
         'Account creation successful: Check your email for account validation ',
     };
+  }
+
+  async me(user: { sub: string; email: string; roles: string[] }) {
+    const found = await this.users.findOne({ where: { id: user.sub } });
+    if (!found) throw new UnauthorizedException();
+    // ➜ expose avatarUrl
+    return {
+      id: found.id,
+      email: found.email,
+      roles: found.roles,
+      avatarUrl: found.avatarUrl,
+    };
+  }
+
+  async upSetProfile(
+    userId: string,
+    file: Express.Multer.File,
+    profileDto: CreateProfileUsersDto
+  ): Promise<Omit<User, 'password'>> {
+    await this.existingEmail(userId);
+
+    const user = await this.users.findOneByOrFail({ id: userId });
+    Object.assign(user, profileDto);
+
+    // 1) si fichier envoyé → remplace l’avatar (supprime l’ancien)
+    if (file) {
+      if (user.avatarKey) await this.storage.deleteByKey(user.avatarKey);
+      const { url, key } = await this.storage.saveAvatar(userId, file);
+      user.avatarUrl = url;
+      (user as any).avatarKey = key;
+    }
+
+    return this.users.save(user);
+  }
+  // get users by id
+  async getUserById(userId: string): Promise<Omit<User, 'password'>> {
+    const user = await this.users.findOneBy({ id: userId });
+    if (!user) throw new BadRequestException('User not found');
+    const { password, ...rest } = user;
+    return rest;
   }
 
   async bootstrapPlatformAdmin(adminDto: CreateAdminDto) {
