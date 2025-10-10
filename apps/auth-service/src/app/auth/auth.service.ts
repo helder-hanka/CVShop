@@ -9,6 +9,7 @@ import {
   CreateProfileUsersDto,
   CreateUsersSellerAdminDto,
   TokenRequestDto,
+  UpdatePasswordDto,
 } from './dto/create-auth.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ArrayContains, LessThan, Repository } from 'typeorm';
@@ -223,6 +224,24 @@ export class AuthService {
       user.status,
       user.salesStatus
     );
+  }
+
+  //update password
+  async updatePassword(
+    userId: string,
+    updatePasswordDto: UpdatePasswordDto
+  ): Promise<{ success: boolean; message: string }> {
+    const user = await this.users.findOne({ where: { id: userId } });
+    if (!user) throw new BadRequestException('User not found');
+    const pwMatches = await bcrypt.compare(
+      updatePasswordDto.password,
+      user.password
+    );
+    if (!pwMatches) throw new BadRequestException('Invalid credentials');
+    user.password = await bcrypt.hash(updatePasswordDto.newPassword, 12);
+    await this.tokens.update({ userId: userId }, { isRevoked: true });
+    await this.users.save(user);
+    return { success: true, message: 'Password updated successfully' };
   }
 
   async refreshTokens(token: TokenRequestDto): Promise<TokenResponseDto> {

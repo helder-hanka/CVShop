@@ -17,6 +17,7 @@ import {
   CreateProfileUsersDto,
   CreateUsersSellerAdminDto,
   TokenRequestDto,
+  UpdatePasswordDto,
 } from './dto/create-auth.dto';
 import { LoginDto, TokenResponseDto } from '@cvshop/shared-dto';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
@@ -86,6 +87,18 @@ export class AuthController {
   @Post('login')
   login(@Body() loginDto: LoginDto): Promise<TokenResponseDto> {
     return this.authService.login(loginDto);
+  }
+
+  @ApiTags('auth')
+  @ApiBearerAuth('access-token')
+  @UseGuards(JwtAuthGuard)
+  @Roles(Role.CUSTOMER, Role.SELLER, Role.PLATFORM_ADMIN)
+  @ApiBody({ type: UpdatePasswordDto })
+  @Post('change-password')
+  changePassword(@Body() body: UpdatePasswordDto, @Req() req: any) {
+    console.log('body', body);
+    const currentUserId = req.user.sub as string;
+    return this.authService.updatePassword(currentUserId, body);
   }
 
   @Get('verify-email')

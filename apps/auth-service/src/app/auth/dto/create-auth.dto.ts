@@ -51,10 +51,6 @@ export class CreateProfileUsersDto {
   @IsString()
   lastName!: string;
 
-  // @ApiProperty({ required: false, format: 'binary' })
-  // @IsString()
-  // @IsOptional()
-  // avatarUrl?: string;
   @ApiProperty({ required: false, format: 'binary', type: 'string' })
   @IsString()
   @IsOptional()
@@ -82,4 +78,14 @@ export class CreateProfileUsersDto {
 
   @ApiProperty({ required: false })
   dateOfBirth?: Date;
+}
+
+export class UpdatePasswordDto {
+  @ApiProperty()
+  @IsString()
+  password!: string;
+
+  @ApiProperty()
+  @IsString()
+  newPassword!: string;
 }
