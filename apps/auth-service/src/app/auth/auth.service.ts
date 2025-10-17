@@ -15,7 +15,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ArrayContains, LessThan, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import {
+  ForgotPasswordDto,
+  ForgotPasswordEvent,
   LoginDto,
+  resetPasswordDto,
   Role,
   SalesStatus,
   UserSellerRegisteredEvent,
@@ -30,12 +33,15 @@ import { randomUUID } from 'crypto';
 import { TokenResponseDto } from '@cvshop/shared-dto';
 import { StorageService } from '../files/storage.service';
 import type { Express } from 'express';
+import { PasswordResetToken } from './entities/password-reset-token.entity';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectRepository(User) private users: Repository<User>,
     @InjectRepository(RefreshToken) private tokens: Repository<RefreshToken>,
+    @InjectRepository(PasswordResetToken)
+    private resetTokens: Repository<PasswordResetToken>,
     private jwt: JwtService,
     @Inject('NOTIFICATIONS') private readonly notifications: ClientProxy,
     private storage: StorageService
@@ -62,6 +68,11 @@ export class AuthService {
   }
   private accessTtl() {
     return process.env.JWT_ACCESS_TTL ?? '15m';
+  }
+  private resetSecret() {
+    return (
+      process.env.JWT_PASSWORD_RESET_SECRET ?? 'super_password_reset_secret_dev'
+    );
   }
   private refreshTokenTtlMs() {
     const env = process.env.JWT_REFRESH_TTL ?? '7d';
@@ -241,6 +252,86 @@ export class AuthService {
     await this.tokens.update({ userId: userId }, { isRevoked: true });
     await this.users.save(user);
     return { success: true, message: 'Password updated successfully' };
+  }
+
+  async forgotPassword(
+    dto: ForgotPasswordDto
+  ): Promise<{ success: boolean; message: string }> {
+    const user = await this.users.findOne({ where: { email: dto.email } });
+    // Ne révèle pas l’existence du compte
+    if (user) {
+      const token = this.resetTokens.create({
+        userId: user.id,
+        expiresAt: new Date(Date.now() + this.refreshTokenTtlMs()),
+        isUsed: false,
+      });
+      await this.resetTokens.save(token);
+
+      const jwt = await this.jwt.signAsync(
+        {
+          sub: user.id,
+          jti: token.id,
+          kind: 'pwd-reset',
+        },
+        {
+          secret: this.resetSecret(),
+          expiresIn: process.env.JWT_PASSWORD_RESET_TTL ?? '1h',
+        }
+      );
+      const resetUrl = `${this.publicUrl()}/api/auth/reset-password?token=${encodeURIComponent(
+        jwt
+      )}`;
+      const event: ForgotPasswordEvent = {
+        userId: user.id,
+        email: user.email,
+        resetUrl,
+      };
+      this.notifications.emit<ForgotPasswordEvent>(
+        'user.forgot-password',
+        event
+      );
+    }
+    await this.pruneExpiredTokens();
+    return { success: true, message: 'Forgot password email sent' };
+  }
+
+  async resetPassword(
+    resetPw: resetPasswordDto
+  ): Promise<{ success: boolean; message: string }> {
+    let payload: { sub: string; jti: string; kind: string };
+
+    try {
+      payload = await this.jwt.verifyAsync(resetPw.token, {
+        secret: this.resetSecret(),
+      });
+    } catch {
+      throw new UnauthorizedException('Invalid or expired token');
+    }
+
+    if (payload.kind !== 'pwd-reset')
+      throw new UnauthorizedException('Invalid token');
+
+    const record = await this.resetTokens.findOne({
+      where: { id: payload.jti, userId: payload.sub },
+    });
+
+    if (!record || record.isUsed || record.expiresAt < new Date()) {
+      throw new UnauthorizedException('Token already used or expired');
+    }
+    const user = await this.users.findOne({ where: { id: payload.sub } });
+    if (!user) throw new UnauthorizedException('User not found');
+
+    user.password = await bcrypt.hash(resetPw.newPassword, 12);
+    await this.users.save(user);
+
+    // Invalide tous les refresh tokens existants (logout partout)
+    await this.tokens.update({ userId: user.id }, { isRevoked: true });
+
+    // Marque le reset token comme utilisé
+    record.isUsed = true;
+    await this.resetTokens.save(record);
+
+    return { success: true, message: 'Password reset successfully' };
   }
 
   async refreshTokens(token: TokenRequestDto): Promise<TokenResponseDto> {

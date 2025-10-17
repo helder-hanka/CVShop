@@ -1,6 +1,9 @@
 import { Controller } from '@nestjs/common';
 import { MailerService } from './mailer.service';
-import { UserSellerRegisteredEvent } from '@cvshop/shared-dto';
+import {
+  ForgotPasswordEvent,
+  UserSellerRegisteredEvent,
+} from '@cvshop/shared-dto';
 import { EventPattern, Payload } from '@nestjs/microservices';
 
 @Controller()
@@ -34,5 +37,18 @@ export class MailerController {
       'Welcome to CVShop - Verify Your Email',
       html
     );
+  }
+
+  @EventPattern('user.forgot-password')
+  async onForgotPassword(@Payload() event: ForgotPasswordEvent) {
+    const html = `
+    <div style="font-family:Arial,Helvetica,sans-serif">
+      <h2>Password Reset</h2>
+      <p>You (or someone else) has requested to reset the password of ${event.email}.</p>
+      <p>To continue, click the button below :</p>
+      <p><a href="${event.resetUrl}" style="background:#0d6efd;color:#fff;padding:10px 16px;border-radius:6px;text-decoration:none">Reset my password</a></p>
+      <p style="margin-top:16px;font-size:12px;color:#666">If you are not the originator of this request, please ignore this email.</p>
+    </div>`;
+    await this.mailerService.send(event.email, 'Reset your password', html);
   }
 }

@@ -24,7 +24,7 @@ import { StorageService } from './files/storage.service';
       password: process.env.DB_PASS,
       database: process.env.DB_NAME,
       entities: [User, RefreshToken],
-      // autoLoadEntities: true,
+      autoLoadEntities: true,
       synchronize: true, // dev only
     }),
     AuthModule,

@@ -19,7 +19,12 @@ import {
   TokenRequestDto,
   UpdatePasswordDto,
 } from './dto/create-auth.dto';
-import { LoginDto, TokenResponseDto } from '@cvshop/shared-dto';
+import {
+  ForgotPasswordDto,
+  LoginDto,
+  resetPasswordDto,
+  TokenResponseDto,
+} from '@cvshop/shared-dto';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from './guard/jwt-auth.guard';
 import { RolesGuard } from './guard/roles.guard';
@@ -99,6 +104,16 @@ export class AuthController {
     console.log('body', body);
     const currentUserId = req.user.sub as string;
     return this.authService.updatePassword(currentUserId, body);
+  }
+
+  @Post('forgot-password')
+  async forgotPassWord(@Body() fgtP: ForgotPasswordDto) {
+    return this.authService.forgotPassword(fgtP);
+  }
+
+  @Post('reset-password')
+  async resetPw(@Body() dto: resetPasswordDto) {
+    return this.authService.resetPassword(dto);
   }
 
   @Get('verify-email')
