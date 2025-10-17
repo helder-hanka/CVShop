@@ -24,6 +24,13 @@ node_modules
 !.vscode/launch.json
 !.vscode/extensions.json
 
+# dotenv environment variable files
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
+
 # misc
 /.sass-cache
 /connect.lock
@@ -42,3 +49,6 @@ Thumbs.db
 .nx/workspace-data
 .cursor/rules/nx-rules.mdc
 .github/instructions/nx.instructions.md
+
+# local uploads
+/uploads
