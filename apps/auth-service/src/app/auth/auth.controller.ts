@@ -101,7 +101,6 @@ export class AuthController {
   @ApiBody({ type: UpdatePasswordDto })
   @Post('change-password')
   changePassword(@Body() body: UpdatePasswordDto, @Req() req: any) {
-    console.log('body', body);
     const currentUserId = req.user.sub as string;
     return this.authService.updatePassword(currentUserId, body);
   }
