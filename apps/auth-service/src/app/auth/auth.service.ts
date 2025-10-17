@@ -74,14 +74,16 @@ export class AuthService {
       process.env.JWT_PASSWORD_RESET_SECRET ?? 'super_password_reset_secret_dev'
     );
   }
-  private refreshTokenTtlMs() {
-    const env = process.env.JWT_REFRESH_TTL ?? '7d';
-    // simpliste: 7d -> 7 * 24 * 60 * 60 * 1000
-    const num = parseInt(env);
-    if (env.endsWith('d')) return num * 24 * 60 * 60 * 1000;
-    if (env.endsWith('h')) return num * 60 * 60 * 1000;
+  private parseDurationMs(env: string, def = '1h'): number {
+    const val = env || def;
+
+    const num = parseInt(val, 10);
+    if (env.endsWith('ms')) return num;
+    if (env.endsWith('s')) return num * 1000;
     if (env.endsWith('m')) return num * 60 * 1000;
-    return 7 * 24 * 60 * 60 * 1000;
+    if (env.endsWith('h')) return num * 60 * 60 * 1000;
+    if (env.endsWith('d')) return num * 24 * 60 * 60 * 1000;
+    return num * 60 * 60 * 1000;
   }
 
   async createCustomer(rDto: CreateAuthDto) {
@@ -260,9 +262,12 @@ export class AuthService {
     const user = await this.users.findOne({ where: { email: dto.email } });
     // Ne révèle pas l’existence du compte
     if (user) {
+      const ttlMs = this.parseDurationMs(
+        process.env.JWT_PASSWORD_RESET_TTL ?? '1'
+      );
       const token = this.resetTokens.create({
         userId: user.id,
-        expiresAt: new Date(Date.now() + this.refreshTokenTtlMs()),
+        expiresAt: new Date(Date.now() + ttlMs),
         isUsed: false,
       });
       await this.resetTokens.save(token);
@@ -415,11 +420,12 @@ export class AuthService {
     salesStatus: SalesStatus
   ): Promise<TokenResponseDto> {
     const jti = randomUUID();
+    const ttlMs = this.parseDurationMs(process.env.JWT_REFRESH_TTL ?? '7d');
 
     const tokenEntity = this.tokens.create({
       id: jti,
       userId,
-      expiresAt: new Date(Date.now() + this.refreshTokenTtlMs()),
+      expiresAt: new Date(Date.now() + ttlMs),
       isRevoked: false,
     });
     await this.tokens.save(tokenEntity);
@@ -432,7 +438,7 @@ export class AuthService {
       { sub: userId, email, roles, status, salesStatus, jti },
       {
         secret: this.refreshSecret(),
-        expiresIn: this.refreshTokenTtlMs() / 1000,
+        expiresIn: ttlMs / 1000,
       }
     );
     return { accessToken, refreshToken };
