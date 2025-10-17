@@ -48,23 +48,23 @@ npx nx g @nx/react:app demo
 npx nx g @nx/react:lib some-lib
 ```
 
-# Build local des apps (optionnel si tu relies uniquement Docker)
+## Build local des apps (optionnel si tu relies uniquement Docker)
 
-pnpm install
-pnpm build:all
+`pnpm instal`
+`pnpm build:al`
 
-# Démarre l’écosystème
+## Démarre l’écosystème
 
-pnpm compose:up
+`pnpm compose:u`
 
-# Démarre seulement Postgres + RabbitMQ :
+## Démarre seulement Postgres + RabbitMQ :
 
-docker compose -f docker/docker-compose.yml up -d postgres rabbitmq
+`docker compose -f docker/docker-compose.yml up -d postgres rabbitm`
 
-# Lance les apps en watch (dans des terminaux séparés ou avec concurrently) :
+## Lance les apps en watch (dans des terminaux séparés ou avec concurrently) :
 
-pnpm nx serve api-gateway
-pnpm nx serve auth-service
+`pnpm nx serve api-gateway `
+`pnpm nx serve auth-servic`
 
 # ... idem pour les autres services quand tu en as besoin
 
