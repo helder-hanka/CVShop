@@ -4,3 +4,6 @@ export * from './auth/jwt-payload.interface';
 export * from './notifications/events';
 export * from './auth/login.token.dto';
 export * from './auth/login.dto';
+export * from './auth/forgot-password.dto';
+export * from './auth/events.password';
+export * from './auth/reset-password.dto';
