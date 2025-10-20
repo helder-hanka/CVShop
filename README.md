@@ -64,10 +64,6 @@ pnpm build:all
 pnpm compose:up
 ```
 
-## Démarre seulement Postgres + RabbitMQ :
-
-`docker compose -f docker/docker-compose.yml up -d postgres rabbitm`
-
 ## Lance les apps en watch (dans des terminaux séparés ou avec concurrently) :
 
 ```sh
@@ -75,7 +71,7 @@ pnpm nx serve api-gateway
 ```
 
 ```sh
-pnpm nx serve auth-servic
+pnpm nx serve auth-service
 ```
 
 # ... idem pour les autres services quand tu en as besoin
