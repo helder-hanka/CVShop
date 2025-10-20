@@ -61,7 +61,7 @@ pnpm build:all
 ## Démarre l’écosystème
 
 ```sh
-pnpm compose:u
+pnpm compose:up
 ```
 
 ## Démarre seulement Postgres + RabbitMQ :
