@@ -55,7 +55,7 @@ pnpm instal
 ```
 
 ```sh
-pnpm build:al
+pnpm build:all
 ```
 
 ## Démarre l’écosystème
