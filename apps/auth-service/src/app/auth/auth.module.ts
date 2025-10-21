@@ -11,6 +11,7 @@ import { JwtStrategy } from './jwt.strategy';
 import { PassportModule } from '@nestjs/passport';
 import { StorageService } from '../files/storage.service';
 import { PasswordResetToken } from './entities/password-reset-token.entity';
+import { logLevel } from 'kafkajs';
 
 @Module({
   imports: [
@@ -25,20 +26,41 @@ import { PasswordResetToken } from './entities/password-reset-token.entity';
       }),
       inject: [ConfigService],
     }),
-    ClientsModule.register([
+    ClientsModule.registerAsync([
       {
         name: 'NOTIFICATIONS',
-        transport: Transport.RMQ,
-        options: {
-          urls: [
-            process.env.RABBITMQ_URL ?? 'amqp://guest:guest@localhost:5672',
-            // `amqp://${process.env.RABBITMQ_USER}:${process.env.RABBITMQ_PASS}` +
-            //   `@${process.env.RABBITMQ_HOST}:${process.env.RABBITMQ_PORT}`,
-          ],
-          queue: 'notifications',
-          queueOptions: {
-            durable: true,
-          },
+        imports: [ConfigModule],
+        inject: [ConfigService],
+        useFactory: (cfg: ConfigService) => {
+          const brokers = (
+            cfg.get<string>('KAFKA_BROKERS', 'localhost:19092') || ''
+          )
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean);
+          return {
+            transport: Transport.KAFKA,
+            options: {
+              client: {
+                clientId: cfg.get('KAFKA_CLIENT_ID_AUTH', 'auth-service'),
+                brokers,
+                // ⏱️ timeouts + retries
+                connectionTimeout: 5_000,
+                authenticationTimeout: 5_000,
+                retry: {
+                  retries: 8,
+                  initialRetryTime: 300, // ms
+                  factor: 0.2,
+                  multiplier: 2,
+                  maxRetryTime: 30_000, // ms
+                },
+                // 🪵 logs Kafkajs
+                logLevel: logLevel.INFO,
+              },
+              // Producteur uniquement (évite d'ouvrir un consumer par erreur)
+              producerOnlyMode: true,
+            },
+          };
         },
       },
     ]),
