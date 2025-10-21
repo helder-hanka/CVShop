@@ -48,14 +48,33 @@ npx nx g @nx/react:app demo
 npx nx g @nx/react:lib some-lib
 ```
 
-# Build local des apps (optionnel si tu relies uniquement Docker)
+## Build local des apps (optionnel si tu relies uniquement Docker)
 
-pnpm install
+```sh
+pnpm instal
+```
+
+```sh
 pnpm build:all
+```
 
-# Démarre l’écosystème
+## Démarre l’écosystème
 
+```sh
 pnpm compose:up
+```
+
+## Lance les apps en watch (dans des terminaux séparés ou avec concurrently) :
+
+```sh
+pnpm nx serve api-gateway
+```
+
+```sh
+pnpm nx serve auth-service
+```
+
+# ... idem pour les autres services quand tu en as besoin
 
 You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
 

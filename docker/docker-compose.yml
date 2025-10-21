@@ -1,79 +1,177 @@
-version: '3.9'
+version: "3.9"
+
 services:
+  # --- DATA STORES ---
   postgres:
     image: postgres:16
+    env_file: ["./env/.env"]
     environment:
-      POSTGRES_USER: cvshop
-      POSTGRES_PASSWORD: cvshop
-      POSTGRES_DB: cvshop_dev
-    ports: ['5432:5432']
-    volumes: ['pgdata:/var/lib/postgresql/data']
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports: ["5432:5432"]
+    volumes: ["pgdata:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  pgadmin:
+    image: dpage/pgadmin4:8
+    env_file: ["./env/.env"]
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    ports: ["5050:80"]
+    depends_on: [postgres]
 
-  rabbitmq:
-    image: rabbitmq:3-management
+  # --- KAFKA (Redpanda) ---
+  redpanda:
+    image: docker.redpanda.com/redpandadata/redpanda:v24.2.6
+    command:
+      - redpanda start
+      - --overprovisioned
+      - --smp=1
+      - --memory=512M
+      - --reserve-memory=0M
+      - --node-id=0
+      - --check=false
+        # 2 listeners: internal (pour containers), external (pour host)
+      - --kafka-addr=internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr=internal://redpanda:9092,external://localhost:19092
     ports:
-      - '5672:5672'
-      - '15672:15672'
+      - "9092:9092" # interne (containers -> redpanda:9092)
+      - "19092:19092" # externe (host -> localhost:19092)
+      - "9644:9644" # admin api
+    restart: unless-stopped
 
+  redpanda-console:
+    image: docker.redpanda.com/redpandadata/console:latest
+    container_name: redpanda-console
+    depends_on: [redpanda]
+    ports:
+      - "8080:8080" # UI -> http://localhost:8080
+    entrypoint: /bin/sh
+    command: -c 'echo "$$CONSOLE_CONFIG_FILE" > /tmp/config.yml; /app/console'
+    environment:
+      CONFIG_FILEPATH: /tmp/config.yml
+      CONSOLE_CONFIG_FILE: |
+        kafka:
+          brokers: ["redpanda:9092"]
+        redpanda:
+          adminApi:
+            enabled: true
+            urls: ["http://redpanda:9644"]
+
+  # --- MAIL DEV ---
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - "1025:1025" # SMTP
+      - "8025:8025" # Web UI http://localhost:8025
+
+  # --- SERVICES APPS ---
   api-gateway:
     build:
       context: ..
       dockerfile: ./apps/api-gateway/Dockerfile
+    env_file: ["./env/.env"]
     environment:
-      PORT: 3000
+      PORT: ${API_GATEWAY_PORT}
       SERVICE_NAME: api-gateway
-    ports: ['3000:3000']
-    depends_on: [rabbitmq]
+    ports: ["${API_GATEWAY_PORT}:3000"]
+    depends_on: []
 
   auth-service:
     build:
       context: ..
       dockerfile: ./apps/auth-service/Dockerfile
+    env_file: ["./env/.env"]
     environment:
-      PORT: 3001
+      PORT: ${AUTH_PORT}
       SERVICE_NAME: auth-service
-    ports: ['3001:3001']
-    depends_on: [postgres, rabbitmq]
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      DB_NAME: ${DB_NAME}
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      JWT_ACCESS_TTL: ${JWT_ACCESS_TTL}
+      JWT_REFRESH_TTL: ${JWT_REFRESH_TTL}
+      AUTH_PUBLIC_URL: ${AUTH_PUBLIC_URL}
+      EMAIL_VERIFY_SECRET: ${EMAIL_VERIFY_SECRET}
+      EMAIL_VERIFY_TTL: ${EMAIL_VERIFY_TTL}
+      # Kafka
+      KAFKA_BROKERS: ${KAFKA_BROKERS}
+      KAFKA_CLIENT_ID_AUTH: ${KAFKA_CLIENT_ID_AUTH}
+    volumes:
+      - ../uploads:/app/uploads
+    ports: ["${AUTH_PORT}:3001"]
+    depends_on: [postgres, redpanda]
 
   products-service:
-    build:
-      context: ..
-      dockerfile: ./apps/products-service/Dockerfile
+    build: { context: .., dockerfile: ./apps/products-service/Dockerfile }
+    env_file: ["./env/.env"]
     environment:
-      PORT: 3002
+      PORT: ${PRODUCTS_PORT}
       SERVICE_NAME: products-service
-    ports: ['3002:3002']
-    depends_on: [postgres, rabbitmq]
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      DB_NAME: ${DB_NAME}
+      # Kafka (si tu l'utilises plus tard ici)
+      KAFKA_BROKERS: ${KAFKA_BROKERS}
+    ports: ["${PRODUCTS_PORT}:3002"]
+    depends_on: [postgres, redpanda]
 
   orders-service:
     build:
       context: ..
       dockerfile: ./apps/orders-service/Dockerfile
+    env_file: ["./env/.env"]
     environment:
       PORT: 3003
       SERVICE_NAME: orders-service
-    ports: ['3003:3003']
-    depends_on: [postgres, rabbitmq]
+      # Kafka (si tu l'utilises plus tard ici)
+      KAFKA_BROKERS: ${KAFKA_BROKERS}
+    ports: ["3003:3003"]
+    depends_on: [redpanda]
 
   payments-service:
     build:
       context: ..
       dockerfile: ./apps/payments-service/Dockerfile
+    env_file: ["./env/.env"]
     environment:
       PORT: 3004
       SERVICE_NAME: payments-service
-    ports: ['3004:3004']
-    depends_on: [rabbitmq]
+      # Kafka (si tu l'utilises plus tard ici)
+      KAFKA_BROKERS: ${KAFKA_BROKERS}
+    ports: ["3004:3004"]
+    depends_on: [redpanda]
 
   notifications-service:
     build:
       context: ..
       dockerfile: ./apps/notifications-service/Dockerfile
+    env_file: ["./env/.env"]
     environment:
-      PORT: 3005
+      PORT: ${NOTIFICATIONS_PORT}
       SERVICE_NAME: notifications-service
-    ports: ['3005:3005']
-    depends_on: [rabbitmq]
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
+      EMAIL_FROM: ${EMAIL_FROM}
+      INCLUDE_PASSWORD_IN_EMAIL: ${INCLUDE_PASSWORD_IN_EMAIL}
+      # Kafka
+      KAFKA_BROKERS: ${KAFKA_BROKERS}
+      KAFKA_CLIENT_ID_NOTIFS: ${KAFKA_CLIENT_ID_NOTIFS}
+      KAFKA_GROUP_NOTIFS: ${KAFKA_GROUP_NOTIFS}
+    ports: ["${NOTIFICATIONS_PORT}:3005"]
+    depends_on: [redpanda, mailhog]
 
 volumes:
   pgdata:
