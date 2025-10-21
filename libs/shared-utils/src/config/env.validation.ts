@@ -7,8 +7,6 @@ export const envValidationSchema = Joi.object({
   PORT: Joi.number().integer().min(1).max(65535).default(3001),
 
   // DB
-  // DATABASE_URL: Joi.string().uri().required(),
-
   DB_HOST: Joi.string().default('localhost'),
   DB_PORT: Joi.number().default(5432),
   DB_USER: Joi.string().required(),
@@ -34,15 +32,9 @@ export const envValidationSchema = Joi.object({
 
   // App URL
   AUTH_PUBLIC_URL: Joi.string().uri().required(),
-  // APP_URL: Joi.string().uri().required(), // ex: https://api.cvshop.com
-  // FRONT_URL: Joi.string().uri().optional(), // ex: https://www.cvshop.com
-
-  // Email confirmation
-  //EMAIL_CONFIRM_TTL_MIN: Joi.number().default(60), // link valid X minutes
-
-  // RabbitMQ
-  RABBITMQ_HOST: Joi.string().default('rabbitmq'),
-  RABBITMQ_PORT: Joi.number().default(5672),
-  RABBITMQ_USER: Joi.string().default('guest'),
-  RABBITMQ_PASS: Joi.string().default('guest'),
+  // KAFKA
+  KAFKA_BROKERS: Joi.string().default('localhost:19092'),
+  KAFKA_CLIENT_ID_NOTIFS: Joi.string().required(),
+  KAFKA_GROUP_NOTIFS: Joi.string().required(),
+  KAFKA_CLIENT_ID_AUTH: Joi.string().required(),
 });
