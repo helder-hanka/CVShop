@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="
+    http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+  <!-- PASS 1: core -->
+  <include file="database/products/changes/0001-create-categories.xml" context="core"/>
+  <include file="database/products/changes/0002-create-products.xml"   context="core"/>
+  <include file="database/products/changes/0003-function-updated-at.xml" context="core"/>
+
+  <!-- PASS 2: triggers -->
+  <include file="database/products/changes/0004-triggers-products-updated-at.xml" context="trg"/>
+</databaseChangeLog>
+
+<!-- <?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="
+    http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+  <include file="database/products/changes/0001-create-categories.xml"/>
+  <include file="database/products/changes/0002-create-products.xml"/>
+  <include file="database/products/changes/0003-function-updated-at.xml"/>
+  <include file="database/products/changes/0004-triggers-products-updated-at.xml"/>
+
+</databaseChangeLog> -->
+
+
+<!-- <?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="
+    http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+ 0) Créer la fonction d'abord 
+  <include file="changes/0003-function-updated-at.xml" relativeToChangelogFile="true"/>
+
+  1) Tables 
+  <include file="changes/0001-create-categories.xml" relativeToChangelogFile="true"/>
+  <include file="changes/0002-create-products.xml" relativeToChangelogFile="true"/>
+
+ 2) Triggers (préconditions DANS les changeSets, pas ici)
+  <include file="changes/0004-triggers-products-updated-at.xml" relativeToChangelogFile="true"/>
+</databaseChangeLog> -->
+

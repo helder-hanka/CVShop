@@ -1,0 +1,134 @@
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+  <preConditions onFail="HALT">
+    <sqlCheck expectedResult="1">
+      SELECT COUNT(*)
+      FROM pg_proc p
+      JOIN pg_namespace n ON n.oid = p.pronamespace
+      WHERE p.proname = 'set_updated_at'
+        AND n.nspname = 'public';
+    </sqlCheck>
+  </preConditions>
+
+  <changeSet id="prod-0004-trg-products-updated-at" author="helder">
+    <sql>
+      CREATE TRIGGER trg_products_updated_at
+      BEFORE UPDATE ON public.products
+      FOR EACH ROW
+      WHEN (OLD IS DISTINCT FROM NEW)
+      EXECUTE FUNCTION public.set_updated_at();
+    </sql>
+    <rollback>
+      <sql>DROP TRIGGER IF EXISTS trg_products_updated_at ON public.products;</sql>
+    </rollback>
+  </changeSet>
+
+  <changeSet id="prod-0005-trg-categories-updated-at" author="helder">
+    <sql>
+      CREATE TRIGGER trg_categories_updated_at
+      BEFORE UPDATE ON public.categories
+      FOR EACH ROW
+      WHEN (OLD IS DISTINCT FROM NEW)
+      EXECUTE FUNCTION public.set_updated_at();
+    </sql>
+    <rollback>
+      <sql>DROP TRIGGER IF EXISTS trg_categories_updated_at ON public.categories;</sql>
+    </rollback>
+  </changeSet>
+</databaseChangeLog>
+
+<!-- <?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="
+    http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+  <preConditions onFail="HALT">
+    <sqlCheck expectedResult="1">
+      SELECT COUNT(*)
+      FROM pg_proc p
+      JOIN pg_namespace n ON n.oid = p.pronamespace
+      WHERE p.proname = 'set_updated_at'
+        AND n.nspname = 'public';
+    </sqlCheck>
+  </preConditions>
+
+  <changeSet id="prod-0004-trg-products-updated-at" author="helder">
+    <sql>
+      CREATE TRIGGER trg_products_updated_at
+      BEFORE UPDATE ON public.products
+      FOR EACH ROW
+      WHEN (OLD IS DISTINCT FROM NEW)
+      EXECUTE FUNCTION public.set_updated_at();
+    </sql>
+    <rollback>
+      <sql>DROP TRIGGER IF EXISTS trg_products_updated_at ON public.products;</sql>
+    </rollback>
+  </changeSet>
+
+  <changeSet id="prod-0004-trg-categories-updated-at" author="helder">
+    <sql>
+      CREATE TRIGGER trg_categories_updated_at
+      BEFORE UPDATE ON public.categories
+      FOR EACH ROW
+      WHEN (OLD IS DISTINCT FROM NEW)
+      EXECUTE FUNCTION public.set_updated_at();
+    </sql>
+    <rollback>
+      <sql>DROP TRIGGER IF EXISTS trg_categories_updated_at ON public.categories;</sql>
+    </rollback>
+  </changeSet>
+</databaseChangeLog> -->
+
+
+<!-- <?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+  (Optionnel) sécurité : vérifier que la fonction existe bien
+  <preConditions onFail="HALT">
+    <sqlCheck expectedResult="1">
+      SELECT COUNT(*)
+      FROM pg_proc p
+      JOIN pg_namespace n ON n.oid = p.pronamespace
+      WHERE p.proname = 'set_updated_at'
+        AND n.nspname = 'public';
+    </sqlCheck>
+  </preConditions> -->
+
+  <!-- products
+  <changeSet id="prod-0004-trg-products-updated-at" author="helder">
+    <sql splitStatements="false" stripComments="false">
+      CREATE TRIGGER trg_products_updated_at
+      BEFORE UPDATE ON public.products
+      FOR EACH ROW
+      WHEN (OLD IS DISTINCT FROM NEW)
+      EXECUTE FUNCTION public.set_updated_at();
+    </sql>
+    <rollback>
+      <sql>DROP TRIGGER IF EXISTS trg_products_updated_at ON public.products;</sql>
+    </rollback>
+  </changeSet>
+
+categories 
+  <changeSet id="prod-0005-trg-categories-updated-at" author="helder">
+    <sql splitStatements="false" stripComments="false">
+      CREATE TRIGGER trg_categories_updated_at
+      BEFORE UPDATE ON public.categories
+      FOR EACH ROW
+      WHEN (OLD IS DISTINCT FROM NEW)
+      EXECUTE FUNCTION public.set_updated_at();
+    </sql>
+    <rollback>
+      <sql>DROP TRIGGER IF EXISTS trg_categories_updated_at ON public.categories;</sql>
+    </rollback>
+  </changeSet>
+
+</databaseChangeLog> -->

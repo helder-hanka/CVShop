@@ -1,4 +1,4 @@
-version: "3.9"
+# version: "3.9"
 
 services:
   # --- DATA STORES ---
@@ -13,9 +13,9 @@ services:
     volumes: ["pgdata:/var/lib/postgresql/data"]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      interval: 5s
+      timeout: 3s
+      retries: 20
   pgadmin:
     image: dpage/pgadmin4:8
     env_file: ["./env/.env"]
@@ -121,10 +121,43 @@ services:
       DB_USER: ${DB_USER}
       DB_PASS: ${DB_PASS}
       DB_NAME: ${DB_NAME}
-      # Kafka (si tu l'utilises plus tard ici)
       KAFKA_BROKERS: ${KAFKA_BROKERS}
     ports: ["${PRODUCTS_PORT}:3002"]
-    depends_on: [postgres, redpanda]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      liquibase-products:
+        condition: service_completed_successfully
+    # depends_on: [postgres, redpanda]
+
+  liquibase-products:
+    image: liquibase/liquibase:4.29.2
+    # env_file: ["./env/.env"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+    volumes: ["..:/workspace"]
+    working_dir: /workspace
+    entrypoint: ["/bin/sh", "-lc"]
+    command: >
+      liquibase
+        --defaultsFile=database/products/liquibase.properties
+        --url=jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+        --username=${POSTGRES_USER}
+        --password=${POSTGRES_PASSWORD}
+        --log-level=info
+        --contexts=core
+        update
+      && 
+      liquibase
+        --defaultsFile=database/products/liquibase.properties
+        --url=jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+        --username=${POSTGRES_USER}
+        --password=${POSTGRES_PASSWORD}
+        --log-level=info
+        --contexts=trg
+        update
 
   orders-service:
     build:

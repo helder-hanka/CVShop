@@ -1,0 +1,21 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+  <changeSet id="prod-0001-categories" author="helder">
+    <createTable tableName="categories">
+      <column name="id" type="uuid">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="name" type="varchar(120)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="description" type="text"/>
+      <column name="created_at" type="timestamp with time zone" defaultValueComputed="NOW()"/>
+      <column name="updated_at" type="timestamp with time zone" defaultValueComputed="NOW()"/>
+    </createTable>
+    <createIndex indexName="idx_categories_name" tableName="categories">
+      <column name="name"/>
+    </createIndex>
+  </changeSet>
+</databaseChangeLog>

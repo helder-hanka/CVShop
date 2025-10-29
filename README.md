@@ -64,7 +64,7 @@ pnpm build:all
 pnpm compose:up
 ```
 
-## Lance les apps en watch (dans des terminaux séparés ou avec concurrently) :
+## Lance les apps en watch (dans des terminaux séparés ou avec concurrently):
 
 ```sh
 pnpm nx serve api-gateway
@@ -72,6 +72,87 @@ pnpm nx serve api-gateway
 
 ```sh
 pnpm nx serve auth-service
+```
+
+## LIQUIBASE
+
+## 1 Démarre Postgres
+
+```sh
+docker compose -f docker/docker-compose.yml up -d postgres
+```
+
+## 2 Applique migrations
+
+```hs
+docker compose -f docker/docker-compose.yml run --rm liquibase-products
+```
+
+Tu peux aussi les chaîner dans un script
+
+```sh
+pnpm db:update:all
+```
+
+# Voir ce qui reste à faire
+
+```sh
+docker compose run --rm liquibase-products status --verbose
+```
+
+# Si tu as MODIFIÉ un changeSet déjà exécuté → recalcul des checksums
+
+```sh
+docker compose run --rm liquibase-products clearCheckSums
+```
+
+# Appliquer les migrations
+
+```sh
+docker compose run --rm liquibase-products update
+```
+
+```sh
+docker compose -f docker/docker-compose.yml run --rm liquibase-products --log-level=info
+```
+
+## POUR VERIFIER:
+
+```sh
+docker compose --env-file ./env/.env -f docker-compose.yml run --rm liquibase-products validate
+docker compose --env-file ./env/.env -f docker-compose.yml run --rm liquibase-products status
+```
+
+## Update (tel que configuré) :
+
+```sh
+docker compose --env-file ./env/.env -f docker-compose.yml run --rm liquibase-products
+```
+
+## Valider les XML :
+
+```sh
+docker compose --env-file ./env/.env -f docker-compose.yml run --rm liquibase-products validate
+```
+
+## Voir les migrations en attente :
+
+```sh
+docker compose --env-file ./env/.env -f docker-compose.yml run --rm liquibase-products status
+```
+
+## (Option DEV) Clear checksums :
+
+```sh
+docker compose --env-file ./env/.env -f docker-compose.yml run --rm liquibase-products clear-checksums
+```
+
+## (Option DEV) Reset complet Postgres :
+
+```sh
+docker compose -f docker-compose.yml down -v
+docker compose --e`v-file ./env/.env -f docker-compose.yml up -d postgres
+docker compose --env-file ./env/.env -f docker-compose.yml run --rm liquibase-products
 ```
 
 # ... idem pour les autres services quand tu en as besoin

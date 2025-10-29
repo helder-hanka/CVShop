@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="
+    http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+  <changeSet id="prod-0002-products" author="helder">
+    <createTable tableName="products">
+      <column name="id" type="uuid">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+
+      <column name="seller_id" type="uuid">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="title" type="varchar(255)">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="description" type="text">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="price" type="numeric(12,2)">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="active" type="boolean" defaultValueBoolean="true"/>
+
+      <column name="images" type="text[]">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="category_id" type="uuid"/>
+
+      <column name="stock" type="integer" defaultValueNumeric="0"/>
+      <column name="reserved" type="integer" defaultValueNumeric="0"/>
+
+      <column name="created_at" type="timestamp with time zone" defaultValueComputed="NOW()"/>
+      <column name="updated_at" type="timestamp with time zone" defaultValueComputed="NOW()"/>
+    </createTable>
+
+    <addDefaultValue tableName="products" columnName="images" defaultValue="{}" columnDataType="text[]"/>
+
+    <createIndex indexName="idx_products_seller" tableName="products">
+      <column name="seller_id"/>
+    </createIndex>
+    <createIndex indexName="idx_products_category" tableName="products">
+      <column name="category_id"/>
+    </createIndex>
+    <createIndex indexName="idx_products_price" tableName="products">
+      <column name="price"/>
+    </createIndex>
+
+    <addForeignKeyConstraint baseTableName="products" baseColumnNames="category_id"
+                             referencedTableName="categories" referencedColumnNames="id"
+                             onDelete="SET NULL" constraintName="fk_products_category"/>
+  </changeSet>
+
+</databaseChangeLog>

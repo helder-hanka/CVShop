@@ -1,0 +1,28 @@
+name: Liquibase Check
+on: [push, pull_request]
+jobs:
+    diff:
+        runs-on: ubuntu-latest
+        services:
+            postgres:
+                image: postgres:16
+                env:
+                    POSTGRES_USER: cvshop
+                    POSTGRES_PASSWORD: cvshop
+                    POSTGRES_DB: cvshop_ci
+                ports: ["5432:5432"]
+                options: >-
+                    --health-cmd="pg_isready -U cvshop -d cvshop_ci"
+                    --health-interval=10s --health-timeout=5s --health-retries=5
+        steps:
+            - uses: actions/checkout@v4
+            - name: Liquibase Auth update
+              run:
+                  docker run --rm --network=host -v $PWD:/w -w /w liquibase/liquibase:4.29.2 \
+                  --defaultsFile=database/auth/liquibase.properties \
+                  --url=jdbc:postgresql://localhost:5432/cvshop_ci --username=cvshop --password=cvshop update-sql
+            - name: Liquibase Products update
+              run:
+                  docker run --rm --network=host -v $PWD:/w -w /w liquibase/liquibase:4.29.2 \
+                  --defaultsFile=database/products/liquibase.properties \
+                  --url=jdbc:postgresql://localhost:5432/cvshop_ci --username=cvshop --password=cvshop update-sql
